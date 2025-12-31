@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-aq2(8)y!1rjs89d)r&ufd+sxh#ez&+7qtxux+*!4hc8-h6hfg*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -121,4 +121,9 @@ STATIC_URL = 'static/'
 RAZORPAY_KEY_ID = 'rzp_test_RxlrQpOeLpU4vA'
 RAZORPAY_KEY_SECRET = 'yYcsLuGe1zqwHmNy5gqpZvbY'
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "crave-cart.onrender.com",  # <-- replace with your Render URL
+]
+
