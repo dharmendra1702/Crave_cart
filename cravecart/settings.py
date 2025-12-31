@@ -127,6 +127,11 @@ RAZORPAY_KEY_SECRET = 'yYcsLuGe1zqwHmNy5gqpZvbY'
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "crave-cart.onrender.com",  # <-- replace with your Render URL
+    "crave-cart-82wd.onrender.com"
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://crave-cart-82wd.onrender.com"
+]
+
 
