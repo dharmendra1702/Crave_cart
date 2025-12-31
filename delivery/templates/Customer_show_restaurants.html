@@ -29,7 +29,7 @@
 
     <!-- THEME TOGGLE -->
     <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-        <span class="icon", id="themeIcon">🌙</span>
+        <span class="icon" id="themeIcon">🌙</span>
     </button>
 
 
@@ -37,7 +37,7 @@
     <!-- CART (BETWEEN THEME & PROFILE) -->
     {% if request.session.username %}
 <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
-    <span class="cart-icon-box", "icon">
+    <span class="cart-icon-box icon">
         <img
             id="cartIcon"
             alt="Cart"
@@ -171,7 +171,7 @@ function openLogoutModal() {
 }
 
 function confirmLogout() {
-    window.location.href = "{% url 'logout' %}";
+    window.location.href = "/logout";
 }
 
 let deleteRestaurantId = null;

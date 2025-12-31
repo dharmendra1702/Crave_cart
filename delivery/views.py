@@ -277,17 +277,16 @@ def view_menu(request, restaurant_id):
 
 @ensure_csrf_cookie
 @ensure_csrf_cookie
+@ensure_csrf_cookie
 def open_customer_show_restaurants(request):
     username = request.session.get("username")
     if not username:
         return redirect("signin")
 
     restaurants = Restaurant.objects.all()
-    cart = Cart.objects.filter(username=username).first()
 
-    cart_count = 0
-    if cart:
-        cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart))
+    cart = Cart.objects.filter(username=username).first()
+    cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart)) if cart else 0
 
     return render(request, "customer_show_restaurants.html", {
         "restaurants": restaurants,
@@ -640,3 +639,8 @@ def cancel_order(request, order_id):
         order.status = "CANCELLED"
         order.save()
     return redirect("order_history")
+
+
+def logout(request):
+    request.session.flush()
+    return redirect("signin")
