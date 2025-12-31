@@ -60,6 +60,7 @@ def signup(request):
         return HttpResponse("Invalid response.")
     
 
+import hashlib
 def signin(request):
     #Go to sign in page and authenticate user
     if request.method == "POST":
@@ -68,6 +69,8 @@ def signin(request):
         # Authenticate user
         try:
             user = User.objects.get(username=username, password=password)
+            hashed = hashlib.sha256(password.encode()).hexdigest()
+
 
             # Set session
             request.session["username"] = user.username
@@ -273,16 +276,25 @@ def view_menu(request, restaurant_id):
 
 
 @ensure_csrf_cookie
+@ensure_csrf_cookie
 def open_customer_show_restaurants(request):
     username = request.session.get("username")
     if not username:
         return redirect("signin")
 
     restaurants = Restaurant.objects.all()
+    cart = Cart.objects.filter(username=username).first()
+
+    cart_count = 0
+    if cart:
+        cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart))
+
     return render(request, "customer_show_restaurants.html", {
         "restaurants": restaurants,
-        "username": username
+        "username": username,
+        "cart_count": cart_count
     })
+
 
 
 @require_POST
@@ -505,62 +517,51 @@ def checkout(request):
     cart = Cart.objects.get(username=username)
     cart_items = CartItem.objects.filter(cart=cart)
 
-    # 1️⃣ Calculate totals ONLY HERE
-    product_total = sum(ci.item.price * ci.quantity for ci in cart_items)
+    totals = calculate_cart_totals(request, cart)
 
-    delivery_fee = 0 if product_total >= 99 else 40
-    coupon_discount = request.session.get("applied_coupon", {}).get("discount", 0)
-
-    taxable = product_total - coupon_discount
-    gst = round(taxable * 0.05, 2)
-    grand_total = round(taxable + gst + delivery_fee, 2)
-
-    # 2️⃣ Create Razorpay Order
     client = razorpay.Client(
         auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
     )
 
     razorpay_order = client.order.create({
-        "amount": int(grand_total * 100),  # ✅ paise
+        "amount": int(totals["grand_total"] * 100),  # ✅ SAME VALUE
         "currency": "INR",
         "payment_capture": 1
     })
 
-    # 3️⃣ Save order_id in session (VERY IMPORTANT)
     request.session["razorpay_order_id"] = razorpay_order["id"]
+    request.session["checkout_data"] = totals  # ✅ UPDATE HERE
 
     return render(request, "checkout.html", {
         "customer": user,
         "cart_items": cart_items,
-        "product_total": product_total,
-        "delivery_fee": delivery_fee,
-        "gst": gst,
-        "coupon_discount": coupon_discount,
-        "grand_total": grand_total,
+        **totals,
         "razorpay_key_id": settings.RAZORPAY_KEY_ID,
-        "order_id": razorpay_order["id"],  # ✅ SAME order
+        "order_id": razorpay_order["id"],
     })
+
 
 
 
 
 @require_POST
+@require_POST
 def payment_success(request):
     username = request.session["username"]
     user = User.objects.get(username=username)
-    checkout_data = request.session["checkout_data"]
-
     cart = Cart.objects.get(username=username)
 
     data = json.loads(request.body)
 
     if data.get("razorpay_order_id") != request.session.get("razorpay_order_id"):
         return JsonResponse({"error": "Order mismatch"}, status=400)
-    
+
+    totals = calculate_cart_totals(request, cart)
+
     order = Order.objects.create(
         user=user,
-        total_amount=checkout_data["grand_total"],
-        payment_id=json.loads(request.body).get("razorpay_payment_id")
+        total_amount=totals["grand_total"],
+        payment_id=data.get("razorpay_payment_id")
     )
 
     for ci in CartItem.objects.filter(cart=cart):
@@ -576,8 +577,10 @@ def payment_success(request):
 
     request.session.pop("applied_coupon", None)
     request.session.pop("checkout_data", None)
+    request.session.pop("razorpay_order_id", None)
 
     return JsonResponse({"success": True})
+
 
 
 def order_success(request):
