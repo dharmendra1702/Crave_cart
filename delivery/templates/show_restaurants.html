@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crave Cart | Restaurants</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% load static %}
+    <link rel="icon" href="{% static 'images/faviconn.png' %}">
+    <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
+</head>
+
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        ❓
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+             <a href="#" class="dropdown-item">👤 My Account</a>
+                <a href="{% url 'open_add_restaurant' %}" class="dropdown-item">🏪 Add Restaurant</a>
+                <a href="{% url 'open_show_restaurants' %}" class="dropdown-item">📋 Manage Restaurants</a>
+                <a href="{% url 'create_coupon' %}" class="dropdown-item">🏷️ Create Coupon</a>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+        </div>
+    </div>
+</div>
+    </header>
+
+    <!-- Main -->
+    <main class="content content-top menu-page">
+
+    <div class="restaurant-container">
+
+        <div class="page-title">
+            <h2>Restaurants</h2>
+            <p>Manage available restaurants</p>
+        </div>
+
+        <div class="restaurant-list">
+            {% for r in restaurants %}
+            <div class="restaurant-row">
+
+                <!-- IMAGE -->
+                <div class="restaurant-image">
+                    <img src="{{ r.picture }}" alt="{{ r.name }}">
+                </div>
+
+                <!-- DETAILS -->
+                <div class="restaurant-info">
+                    <h3>{{ r.name }}</h3>
+                    <p class="cuisine">{{ r.cuisine }}</p>
+                    <p class="rating">⭐ {{ r.rating }}</p>
+                    <p class="location">📍 {{ r.location }}</p>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="restaurant-actions">
+
+                    <a href="{% url 'open_update_restaurant' r.id %}">
+                        <button class="btn small outline">✏ Update</button>
+                    </a>
+
+                    <button class="btn small danger"
+        onclick="openDeleteRestaurantModal('{{ r.id }}')">
+    🗑 Delete
+</button>
+
+                    <a href="{% url 'open_update_menu' r.id %}">
+                        <button class="btn small primary">📋 Menu</button>
+                    </a>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</main>
+
+
+    <footer class="footer">
+        © 2025 Crave Cart
+    </footer>
+
+</div>
+
+ <!-- DELETE RESTAURANT MODAL -->
+<div class="logout-overlay" id="deleteRestaurantOverlay">
+    <div class="logout-modal">
+        <h3>Delete Restaurant</h3>
+        <p>This will remove the restaurant permanently.</p>
+
+        <form id="deleteRestaurantForm" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn danger full-width">
+                Yes, Delete Restaurant
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- LOGOUT MODAL -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Out
+        </button>
+    </div>
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+<script>
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+
+let deleteRestaurantId = null;
+
+function openDeleteRestaurantModal(id) {
+    deleteRestaurantId = id;
+    const form = document.getElementById("deleteRestaurantForm");
+    form.action = `/delete_restaurant/${id}`;
+    document.getElementById("deleteRestaurantOverlay").classList.add("show");
+}
+</script>
+</body>
+</html>

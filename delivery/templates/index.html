@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crave Cart</title>
+
+    {% load static %}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        ❓
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="{% url 'open_signup' %}" class="dropdown-item">Sign Up</a>
+                <a href="{% url 'open_signin' %}" class="dropdown-item">Sign In</a>
+        </div>
+    </div>
+</div>
+
+        
+    </header>
+
+    <!-- Main -->
+    <main class="content">
+        <h1>Order food you love</h1>
+        <p>Simple. Fast. Reliable food ordering platform.</p>
+
+        <div class="actions">
+            <a href="{% url 'open_signup' %}" class="btn primary">Sign Up</a>
+            <a href="{% url 'open_signin' %}" class="btn secondary">Sign In</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        © 2025 Crave Cart
+    </footer>
+
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+<script>
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+</script>
+</body>
+</html>

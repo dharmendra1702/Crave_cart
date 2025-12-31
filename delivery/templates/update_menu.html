@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu | {{ restaurant.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% load static %}
+    <link rel="icon" href="{% static 'images/faviconn.png' %}">
+    <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
+</head>
+
+<body>
+<div class="page">
+<!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        ❓
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+             <a href="#" class="dropdown-item">👤 My Account</a>
+                <a href="{% url 'open_add_restaurant' %}" class="dropdown-item">🏪 Add Restaurant</a>
+                <a href="{% url 'open_show_restaurants' %}" class="dropdown-item">📋 Manage Restaurants</a>
+                <a href="{% url 'create_coupon' %}" class="dropdown-item">🏷️ Create Coupon</a>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+        </div>
+    </div>
+</div>
+    </header>
+
+<!-- MAIN -->
+<main class="content content-top">
+
+<div class="restaurant-container">
+
+    <!-- TITLE -->
+    <div class="page-title">
+        <h2>{{ restaurant.name }} Menu</h2>
+        <p>Manage food items</p>
+    </div>
+
+    <!-- MENU TABLE -->
+    {% if itemList %}
+    <div class="table-wrapper">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Price (₹)</th>
+                    <th>Type</th>
+                    <th style="text-align:center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itemList %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+
+                    <td>
+                        <img src="{{ item.picture }}" class="restaurant-img">
+                    </td>
+
+                    <td>{{ item.description }}</td>
+                    <td>₹ {{ item.price }}</td>
+
+                    <td>
+                        {% if item.vegeterian %}
+                            🟢 Veg
+                        {% else %}
+                            🔴 Non-Veg
+                        {% endif %}
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td style="display:flex; gap:8px; justify-content:center;">
+                        <!-- UPDATE -->
+                        <a href="{% url 'open_update_item' item.id restaurant.id %}">
+                            <button class="btn small outline">✏ Update</button>
+                        </a>
+
+                        <!-- DELETE -->
+                        <button class="btn small danger"
+                            onclick="openDeleteItemModal('{{ item.id }}', '{{ restaurant.id }}')">
+                            🗑 Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="empty-text">No menu items added yet.</p>
+    {% endif %}
+
+    <!-- ADD ITEM FORM -->
+    <div class="menu-center">
+        <div class="auth-card menu-card">
+
+            <h3>Add Menu Item</h3>
+
+            <form method="POST"
+                  action="{% url 'update_menu' restaurant.id %}"
+                  class="auth-form">
+                {% csrf_token %}
+
+                <label>Item Name</label>
+                <input type="text" name="name" required>
+
+                <label>Description</label>
+                <textarea name="description" rows="3" required></textarea>
+
+                <label>Price (₹)</label>
+                <input type="number" name="price" step="0.01" required>
+
+                <label class="checkbox-row">
+                    <input type="checkbox" name="vegeterian">
+                    Vegetarian
+                </label>
+
+                <label>Image URL</label>
+                <input type="url" name="picture">
+
+                <button type="submit" class="btn primary full-width">
+                    Add Item
+                </button>
+            </form>
+
+            <div class="back-center">
+                <a href="{% url 'open_show_restaurants' %}" class="btn outline">
+                    ← Back to Restaurants
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</main>
+
+<footer class="footer">
+    © 2025 Crave Cart
+</footer>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="logout-overlay" id="deleteItemOverlay">
+    <div class="logout-modal">
+        <h3>Delete Item</h3>
+        <p>Are you sure you want to delete this item?</p>
+
+        <button class="btn danger full-width" id="confirmDeleteItemBtn">
+            Yes, Delete Item
+        </button>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="{% static 'js/theme.js' %}"></script>
+
+
+<script>
+let deleteItemId = null;
+let deleteRestaurantId = null;
+
+function openDeleteItemModal(itemId, restaurantId) {
+    deleteItemId = itemId;
+    deleteRestaurantId = restaurantId;
+    document.getElementById("deleteItemOverlay").classList.add("show");
+}
+
+document.getElementById("confirmDeleteItemBtn").onclick = function () {
+    window.location.href =
+        `/delete_item/${deleteItemId}/${deleteRestaurantId}`;
+};
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+</script>
+
+</body>
+</html>

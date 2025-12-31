@@ -1,0 +1,366 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout | Crave Cart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+
+
+    <style>
+/* ================= ROOT ================= */
+:root {
+    --primary: #22c55e;
+    --primary-dark: #16a34a;
+    --bg-light: #f8fafc;
+    --bg-card: rgba(255,255,255,0.9);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-soft: rgba(0,0,0,0.08);
+}
+
+body[data-theme="dark"] {
+    --bg-light: #0f172a;
+    --bg-card: rgba(20,20,20,0.9);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-soft: rgba(255,255,255,0.1);
+}
+
+
+/* ================= CONTAINER ================= */
+.checkout-container {
+    max-width: 880px;
+    margin: 90px auto;
+    padding: 36px;
+    border-radius: 28px;
+    background: var(--bg-card);
+    backdrop-filter: blur(14px);
+    box-shadow: 
+        0 40px 80px rgba(0,0,0,0.12),
+        inset 0 0 0 1px var(--border-soft);
+}
+
+/* ================= HEADER ================= */
+.checkout-container h2 {
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.user-info {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 26px;
+}
+
+.user-info strong {
+    color: var(--text-main);
+}
+
+/* ================= CART LIST ================= */
+.cart-list {
+    border-top: 1px dashed var(--border-soft);
+    border-bottom: 1px dashed var(--border-soft);
+    padding: 20px 0;
+    margin-bottom: 24px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+.cart-item span:last-child {
+    font-weight: 600;
+}
+
+/* ================= TOTAL BOX ================= */
+.total-box {
+    display: grid;
+    row-gap: 12px;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.total-box div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.total-box hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-soft), transparent);
+    margin: 16px 0;
+}
+
+.total-box strong {
+    font-size: 22px;
+    color: var(--text-main);
+}
+
+/* ================= BUTTON ================= */
+.checkout-btn {
+    margin-top: 36px;
+    width: 100%;
+    padding: 18px;
+    border-radius: 22px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 
+        0 16px 30px rgba(34,197,94,0.45),
+        inset 0 -2px 0 rgba(0,0,0,0.15);
+    transition: all 0.25s ease;
+}
+
+.checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 22px 40px rgba(34,197,94,0.55),
+        inset 0 -2px 0 rgba(0,0,0,0.2);
+}
+
+.checkout-btn:active {
+    transform: scale(0.98);
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+    .checkout-container {
+        margin: 40px 16px;
+        padding: 24px;
+    }
+
+    .checkout-container h2 {
+        font-size: 26px;
+    }
+
+    .total-box strong {
+        font-size: 20px;
+    }
+}
+
+/* ================= CHECKOUT HEADER ================= */
+.checkout-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.checkout-header h2 {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.checkout-header .user-info {
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.checkout-header .user-info strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.checkout-header::after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, #22c55e, #16a34a);
+    border-radius: 10px;
+    margin: 16px auto 0;
+}
+
+</style>
+
+</head>
+
+<body>
+<!-- ================= HEADER ================= -->
+<header class="header">
+    <div class="brand">
+        <a href="{% url 'home' %}" class="logo-link">
+            <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+        </a>
+    </div>
+
+    <div class="header-actions">
+        <button class="icon-btn" title="Help"><span class="icon">❓</span></button>
+        <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon", class = "icon">🌙</span>
+    </button>
+
+
+
+    <!-- CART (BETWEEN THEME & PROFILE) -->
+    {% if request.session.username %}
+        <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
+            <span class="cart-icon-box">
+                <img
+                    id="cartIcon"
+                    alt="Cart"
+                >
+                {% if cart_count and cart_count > 0 %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </span>
+        </a>
+    {% endif %}
+
+
+
+        <div class="profile-menu">
+            <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+                <img src="{% static 'images/profile.png' %}" alt="Profile">
+            </button>
+
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-header">
+                    <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <a href="#" class="dropdown-item">👤 My Profile</a>
+                <a href="#" class="dropdown-item">🛒 Order History</a>
+                <div class="dropdown-divider"></div>
+
+                <a href="javascript:void(0)"
+                   class="dropdown-item logout"
+                   onclick="openLogoutModal()">🚪 Log Out</a>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="checkout-container">
+
+    <div class="checkout-header">
+    <h2>Checkout</h2>
+    <div class="user-info">
+        Logged in as: <strong>{{ customer.username }}</strong>
+    </div>
+</div>
+
+
+    <div class="cart-list">
+        {% for ci in cart_items %}
+            <div class="cart-item">
+                <span>{{ ci.item.name }} × {{ ci.quantity }}</span>
+                <span>₹{{ ci.item.price|floatformat:2 }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="total-box">
+    <div>Items Total <span>₹{{ product_total }}</span></div>
+    <div>Delivery <span>₹{{ delivery_fee }}</span></div>
+    <div>GST (5%) <span>₹{{ gst }}</span></div>
+    {% if coupon_discount %}
+    <div>Coupon Discount <span>-₹{{ coupon_discount }}</span></div>
+    {% endif %}
+    <hr>
+    <div><strong>Total</strong> <strong>₹{{ grand_total }}</strong></div>
+</div>
+
+
+    <!-- Razorpay Button -->
+    <button id="rzp-button" class="checkout-btn">
+        PAY & PLACE ORDER
+    </button>
+
+</div>
+<footer class="footer">
+    © 2025 Crave Cart
+</footer>
+<!-- ================= LOGOUT MODAL ================= -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Out
+        </button>
+    </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    
+const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
+const CART_DARK  = "{% static 'images/light-cart.png' %}";
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+
+
+var options = {
+    key: "{{ razorpay_key_id }}",
+    order_id: "{{ order_id }}",
+    currency: "INR",
+    name: "Crave Cart",
+    description: "Order Payment",
+
+    method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true
+    },
+
+    handler: function (response) {
+        fetch("{% url 'payment_success' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(response)
+        }).then(() => {
+            window.location.href = "{% url 'order_history' %}";
+        });
+    }
+};
+
+var rzp = new Razorpay(options);
+document.getElementById("rzp-button").onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+
+</body>
+</html>

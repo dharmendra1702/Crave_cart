@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crave Cart | Restaurants</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% load static %}
+    <link rel="icon" href="{% static 'images/faviconn.png' %}">
+    <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+</head>
+
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        <span class="icon">❓</span>
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span class="icon", id="themeIcon">🌙</span>
+    </button>
+
+
+
+    <!-- CART (BETWEEN THEME & PROFILE) -->
+    {% if request.session.username %}
+<a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
+    <span class="cart-icon-box", "icon">
+        <img
+            id="cartIcon"
+            alt="Cart"
+        >
+        {% if cart_count and cart_count > 0 %}
+            <span class="cart-count">{{ cart_count }}</span>
+        {% endif %}
+    </span>
+</a>
+{% endif %}
+
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <span class="icon">
+                <img src="" alt="Profile">
+            </span>
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="#" class="dropdown-item">👤 My Profile</a>
+                    <a href="#" class="dropdown-item">🛒 Order History</a>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+
+        </div>
+    </div>
+</div>
+    </header>
+
+    <!-- Main -->
+    <main class="content content-top menu-page">
+
+    <div class="restaurant-container">
+
+        <div class="page-title">
+            <h2>Restaurants</h2>
+        </div>
+
+        <div class="restaurant-list">
+            {% for r in restaurants %}
+            <div class="restaurant-row">
+
+                <!-- IMAGE -->
+                <div class="restaurant-image">
+                    <img src="{{ r.picture }}" alt="{{ r.name }}">
+                </div>
+
+                <!-- DETAILS -->
+                <div class="restaurant-info">
+                    <h3>{{ r.name }}</h3>
+                    <p class="cuisine">{{ r.cuisine }}</p>
+                    <p class="rating">⭐ {{ r.rating }}</p>
+                    <p class="location">📍 {{ r.location }}</p>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="restaurant-actions">
+
+                    <a href="{% url 'view_menu' r.id %}">
+                        <button class="btn small primary">📋 Menu</button>
+                    </a>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</main>
+
+
+    <footer class="footer">
+        © 2025 Crave Cart
+    </footer>
+
+</div>
+
+<!-- LOGOUT MODAL -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Out
+        </button>
+    </div>
+</div>
+
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+<script>
+    const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
+const CART_DARK  = "{% static 'images/light-cart.png' %}";
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+
+let deleteRestaurantId = null;
+
+function openDeleteRestaurantModal(id) {
+    deleteRestaurantId = id;
+    const form = document.getElementById("deleteRestaurantForm");
+    form.action = `/delete_restaurant/${id}`;
+    document.getElementById("deleteRestaurantOverlay").classList.add("show");
+}
+</script>
+</body>
+</html>

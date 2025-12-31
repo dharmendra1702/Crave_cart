@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Item</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
+
+    <style>
+        /* FIX FORM LAYOUT */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .auth-form label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .auth-form input,
+        .auth-form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+}
+
+        /* Reduce checkbox size */
+        .checkbox-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            transform: scale(0.9);   /* fine-tune size */
+            cursor: pointer;
+        }
+
+
+        .menu-card {
+            max-width: 520px;
+        }
+
+        /* Space between form card and footer */
+        .menu-center {
+            margin-bottom: 60px;   /* 👈 THIS creates the gap */
+        }
+
+        /* Optional: ensure footer never sticks */
+        .footer {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        ❓
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+    </button>
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+             <a href="#" class="dropdown-item">👤 My Account</a>
+                <a href="{% url 'open_add_restaurant' %}" class="dropdown-item">🏪 Add Restaurant</a>
+                <a href="{% url 'open_show_restaurants' %}" class="dropdown-item">📋 Manage Restaurants</a>
+                <a href="{% url 'create_coupon' %}" class="dropdown-item">🏷️ Create Coupon</a>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+        </div>
+    </div>
+</div>
+    </header>
+
+<div class="menu-center">
+    <div class="auth-card menu-card">
+
+        <h3 style="text-align:center;">Update Item</h3>
+
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+
+            <div>
+                <label>Item Name</label>
+                <input type="text" name="name" value="{{ item.name }}" required>
+            </div>
+
+            <div>
+                <label>Description</label>
+                <textarea name="description" rows="4" required>{{ item.description }}</textarea>
+            </div>
+
+            <div>
+                <label>Price (₹)</label>
+                <input type="number" step="0.01" name="price" value="{{ item.price }}" required>
+            </div>
+
+            <div class="checkbox-row">
+                <input type="checkbox" name="vegeterian"
+                       {% if item.vegeterian %}checked{% endif %}>
+                <span>Vegetarian</span>
+            </div>
+
+            <div>
+                <label>Image URL</label>
+                <input type="url" name="picture" value="{{ item.picture }}">
+            </div>
+
+            <button type="submit" class="btn primary full-width">
+                Update Item
+            </button>
+        </form>
+
+        <div class="back-center">
+            <a href="{% url 'open_update_menu' restaurant.id %}" class="btn outline">
+                ← Back
+            </a>
+        </div>
+
+    </div>
+</div>
+<footer class="footer">
+    © 2025 Crave Cart
+</footer>   
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+
+<script>
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+</script>
+
+</body>
+</html>

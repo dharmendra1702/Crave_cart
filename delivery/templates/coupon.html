@@ -1,0 +1,554 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coupon Management | Admin</title>
+    <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+    <style>
+
+        /* ===============================
+   THEME VARIABLES
+   =============================== */
+
+:root {
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-glass: rgba(255, 255, 255, 0.35);
+    --border: rgba(0, 0, 0, 0.08);
+
+    --text-main: #111827;
+    --text-muted: #6b7280;
+
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --input-text: #111;
+
+    --btn-dark: #111;
+    --btn-light: #f3f4f6;
+
+    --row-bg: white;
+}
+
+/* DARK THEME OVERRIDES */
+body[data-theme="dark"] {
+    --card-bg: rgba(20, 20, 20, 0.75);
+    --card-glass: rgba(30, 30, 30, 0.6);
+    --border: rgba(255, 255, 255, 0.12);
+
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+
+    --input-bg: rgba(30, 30, 30, 0.9);
+    --input-text: #f9fafb;
+
+    --btn-dark: #f9fafb;
+    --btn-light: #1f2933;
+
+    --row-bg: rgba(20, 20, 20, 0.85);
+}
+
+
+/* MAIN CARD */
+.coupon-card {
+    max-width: 980px;
+    margin: 60px auto;
+    padding: 36px;
+    border-radius: 22px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    backdrop-filter: blur(12px);
+    box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* HEADER */
+.coupon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.coupon-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* SEARCH */
+.search-box {
+    width: 280px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+    background: var(--btn-dark);
+    color: var(--input-text);
+    font-size: 14px;
+}
+
+.search-box::placeholder {
+    color: #9ca3af;
+}
+
+/* FORM */
+form {
+    background: var(--card-glass);
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    font-size: 14px;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* CODE + RANDOM */
+form > div {
+    display: flex;
+    gap: 12px;
+}
+
+.btn.secondary {
+    background: var(--btn-dark);
+    color: white;
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+
+body[data-theme="dark"] .btn.secondary {
+    background: #ffffff;
+    color: #000;
+}
+
+/* ACTIVE CHECKBOX */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.checkbox-row input {
+    transform: scale(1.1);
+}
+
+/* PRIMARY BUTTON */
+.btn.primary.full-width {
+    margin-top: 26px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #111827, #000000);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn.primary.full-width:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+/* BULK BUTTON */
+.bulk-btn {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white;
+    border-radius: 999px;
+    padding: 12px 26px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(37,99,235,0.35);
+}
+
+.bulk-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: 30px;
+}
+
+thead th {
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    olor: var(--text-muted);
+    padding-bottom: 10px;
+}
+
+tbody tr {
+    background: var(--row-bg);
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+}
+
+tbody td {
+    padding: 16px;
+    font-size: 14px;
+}
+
+/* STATUS */
+.status {
+    font-weight: 700;
+}
+
+.status.active {
+    color: #22c55e;
+}
+
+.status.inactive {
+    color: #ef4444;
+}
+
+/* TOGGLE BUTTON */
+.btn.small.secondary {
+    background: var(--btn-light);
+    color: var(--text-main);
+    padding: 14px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    justify-content: center;
+    display: inline-flex;
+}
+
+.btn.small.secondary:hover {
+    background: #111;
+    color: white;
+}
+
+/* ===============================
+   ONE-LINE FORM ROW
+   =============================== */
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.form-group label {
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ===============================
+   GLASSMORPHISM CARD
+   =============================== */
+
+.coupon-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* FORM GLASS */
+form {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* INPUT TRANSPARENCY */
+input,
+select {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+/* ===============================
+   RESPONSIVE (MOBILE SAFE)
+   =============================== */
+
+@media (max-width: 900px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+input,
+select {
+    background: var(--input-bg);
+    color: var(--input-text) !important;
+    border: 1px solid var(--border);
+}
+
+input::placeholder {
+    color: var(--text-muted);
+}
+
+    </style>
+</head>
+
+<body>
+<!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        ❓
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ request.user.username|capfirst }}</strong>
+                </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+            <a href="#" class="dropdown-item">👤 My Account</a>
+
+                <a href="{% url 'open_add_restaurant' %}" class="dropdown-item">🏪 Add Restaurant</a>
+                <a href="{% url 'open_show_restaurants' %}" class="dropdown-item">📋 Manage Restaurants</a>
+                <a href="{% url 'create_coupon' %}" class="dropdown-item">🏷️ Create Coupon</a>
+
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+        </div>
+    </div>
+</div>
+    </header>
+<div class="auth-card coupon-card">
+    {% if message %}
+<div style="
+    margin-bottom:15px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(34,197,94,0.15);
+    color:#15803d;
+    font-weight:600;
+    text-align:center;
+">
+    {{ message }}
+</div>
+{% endif %}
+
+
+    <!-- HEADER -->
+    <div class="coupon-header">
+        <h2>Coupon Management</h2>
+        <input type="text" id="searchInput" class="search-box"
+               placeholder="Search coupon code..." onkeyup="searchCoupon()">
+    </div>
+
+    <!-- CREATE COUPON -->
+    <form method="POST" action="{% url 'create_coupon' %}">
+    {% csrf_token %}
+    <input type="hidden" name="single" value="1">
+
+    <label>Coupon Code</label>
+    <div style="display:flex;gap:10px;">
+        <input type="text" name="code" id="couponCode"
+               placeholder="Leave empty for auto-generate">
+        <button type="button" class="btn secondary" onclick="generateCode()">
+            Random
+        </button>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Discount Type</label>
+            <select name="discount_type" required>
+                <option value="percent">Percentage (%)</option>
+                <option value="flat">Flat (₹)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Discount Value</label>
+            <input type="number" name="discount_value" required>
+        </div>
+
+        <div class="form-group">
+            <label>Minimum Order Amount</label>
+            <input type="number" name="min_order_amount" value="0">
+        </div>
+    </div>
+
+    <div class="checkbox-row">
+        <input type="checkbox" name="is_active" checked>
+        <label>Active</label>
+    </div>
+
+    <button type="submit" class="btn primary full-width">
+        Create Coupon
+    </button>
+</form>
+
+
+    </form>
+
+    <!-- BULK GENERATE -->
+    <div style="margin-top:20px;text-align:center;">
+        <form method="POST" action="{% url 'create_coupon' %}">
+            {% csrf_token %}
+            <input type="hidden" name="bulk" value="1">
+            <button class="bulk-btn">Generate 50 Coupons</button>
+        </form>
+    </div>
+
+    <!-- COUPON LIST -->
+    <table id="couponTable">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Min Order</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for c in coupons %}
+            <tr>
+                <td>{{ c.code }}</td>
+                <td>
+                    {% if c.discount_type == "percent" %}
+                        {{ c.discount_value }}%
+                    {% else %}
+                        ₹{{ c.discount_value }}
+                    {% endif %}
+                </td>
+                <td>₹{{ c.min_order_amount }}</td>
+                <td class="status {% if c.is_active %}active{% else %}inactive{% endif %}">
+                    {% if c.is_active %}Active{% else %}Disabled{% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'toggle_coupon' c.id %}" class="btn small secondary ,toggle-wrapper">
+                        Toggle
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer class="footer">© 2025 Crave Cart</footer>
+
+
+<!-- LOGOUT MODAL -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Me Out
+        </button>
+    </div>
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+<script>
+function generateCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "CRAVE";
+    for (let i = 0; i < 6; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    document.getElementById("couponCode").value = code;
+}
+
+function searchCoupon() {
+    let input = document.getElementById("searchInput").value.toUpperCase();
+    let rows = document.querySelectorAll("#couponTable tbody tr");
+
+    rows.forEach(row => {
+        let code = row.children[0].innerText.toUpperCase();
+        row.style.display = code.includes(input) ? "" : "none";
+    });
+}
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+</script>
+
+</body>
+</html>

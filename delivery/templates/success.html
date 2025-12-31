@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crave Cart | Welcome</title>
+
+    {% load static %}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
+
+    <!-- Main CSS (same global style) -->
+    <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link" aria-label="Go to home">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span id="themeIcon">🌙</span>
+        </button>
+    </header>
+
+    <!-- Main -->
+    <main class="content">
+        <div class="auth-card">
+            <h2>Welcome, {{ user.username }} 👋</h2>
+            <p class="auth-subtitle">
+                You have successfully signed in to Crave Cart.
+            </p>
+
+            <div class="actions">
+                <a href="{% url 'home' %}" class="btn primary full-width">
+                    Go to Home
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        © 2025 Crave Cart
+    </footer>
+
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+</body>
+</html>
