@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from django.contrib.auth import get_user_model
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -175,3 +176,19 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+def create_admin():
+    if os.environ.get("CREATE_SUPERUSER") == "true":
+        User = get_user_model()
+        username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
+        password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
+        email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
+
+        if not User.objects.filter(username=username).exists():
+            User.objects.create_superuser(
+                username=username,
+                email=email,
+                password=password
+            )
+            print("✅ Superuser created")
+
+create_admin()
