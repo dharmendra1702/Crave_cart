@@ -1,0 +1,2467 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* =====================================================
+   THEME VARIABLES
+===================================================== */
+
+/* ===== THEME VARIABLES ===== */
+:root {
+    --bg-color: #fafafa;
+    --text-color: #222;
+    --muted-text: #666;
+    --border-color: #e0e0e0;
+}
+
+body.dark-theme {
+    --bg-color: #0f172a;
+    --card-bg: #111827;
+    --text-color: #e5e7eb;
+    --muted-text: #9ca3af;
+    --border-color: #1f2933;
+}
+
+
+/* =====================================================
+   GLOBAL RESET
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* =====================================================
+   BACKGROUND
+===================================================== */
+
+body {
+    background:
+        radial-gradient(circle at top,
+            rgba(255, 255, 255, 0.30),
+            rgba(255, 255, 255, 0.30)),
+        url("../images/bg-light.jpg") center / cover no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    background:
+        radial-gradient(circle at top,
+            rgba(15, 15, 15, 0.40),
+            rgba(10, 10, 10, 0.40)),
+        url("../images/bg-dark.jpg") center / cover no-repeat;
+}
+
+/* =====================================================
+   PAGE LAYOUT
+===================================================== */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+    padding: 10px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+}
+
+/* Logo */
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    height: 52px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover .logo {
+    transform: scale(1.05);
+}
+
+/* =====================================================
+   HEADER ACTIONS (RIGHT)
+===================================================== */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Icon buttons (Help, Theme) */
+
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 17px;
+    backdrop-filter: blur(6px);
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+body[data-theme="dark"] .icon-btn {
+    background: rgba(30, 30, 30, 0.6);
+}
+
+/* =====================================================
+   PROFILE MENU
+===================================================== */
+
+.profile-menu {
+    position: relative;
+}
+
+/* Avatar button */
+
+.profile-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.profile-avatar:hover img {
+    transform: scale(1.05);
+}
+
+/* =====================================================
+   PROFILE DROPDOWN
+===================================================== */
+
+.profile-dropdown {
+    position: absolute;
+    top: 54px;
+    right: 0;
+
+    width: 260px;
+    /* unchanged */
+    border-radius: 14px;
+
+    /* LIGHT THEME */
+    background: rgba(255, 255, 255, 0.92);
+    color: #111;
+
+    border: 1px solid var(--border);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+
+    display: none;
+    flex-direction: column;
+
+    z-index: 9999;
+    /* MUST be highest */
+}
+
+
+body[data-theme="dark"] .profile-dropdown {
+    background: rgba(20, 20, 20, 0.96);
+}
+
+.profile-dropdown.show {
+    display: flex;
+    animation: dropdownFade 0.2s ease;
+}
+
+/* Dropdown header */
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+body[data-theme="dark"] .profile-header {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.profile-pic {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-header strong {
+    font-size: 15px;
+}
+
+/* =====================================================
+   DROPDOWN ITEMS
+===================================================== */
+
+.dropdown-item {
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+body[data-theme="dark"] .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+}
+
+.dropdown-item.logout {
+    color: #e53935;
+    font-weight: 600;
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(229, 57, 53, 0.12);
+}
+
+/* =====================================================
+   MAIN CONTENT
+===================================================== */
+
+.content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+/* Card */
+
+.auth-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+body[data-theme="dark"] .auth-card {
+    background: rgba(20, 20, 20, 0.88);
+}
+
+.auth-card h2 {
+    margin-bottom: 6px;
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+/* Buttons */
+
+.btn {
+    padding: 12px 26px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+.btn.secondary {
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.full-width {
+    width: 100%;
+    margin-top: 12px;
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer {
+    text-align: center;
+    padding: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--muted);
+}
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+    .header {
+        padding: 10px 18px;
+    }
+
+    .logo {
+        height: 44px;
+    }
+
+    .auth-card {
+        padding: 24px;
+    }
+}
+
+
+
+
+/* =======================
+   THEME VARIABLES
+======================= */
+
+:root {
+    --bg: #ffffff;
+    --text: #111111;
+    --muted: #555;
+    --primary: #000000;
+    --border: #ddd;
+}
+
+body[data-theme="dark"] {
+    --bg: #0f0f0f;
+    --text: #f5f5f5;
+    --muted: #aaa;
+    --primary: #ffffff;
+    --border: #333;
+}
+
+/* =======================
+   GLOBAL
+======================= */
+
+/* =======================
+   BACKGROUND (SAME AS ADMIN)
+======================= */
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top,
+            rgba(255, 255, 255, 0.35),
+            rgba(255, 255, 255, 0.35)),
+        url("../images/bg-light.jpg") center / cover no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    background:
+        radial-gradient(circle at top,
+            rgba(15, 15, 15, 0.45),
+            rgba(10, 10, 10, 0.45)),
+        url("../images/bg-dark.jpg") center / cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* =======================
+   PAGE LAYOUT
+======================= */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =======================
+   HEADER (ADMIN-LIKE)
+======================= */
+
+.header {
+    padding: 8px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    height: 52px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover .logo {
+    transform: scale(1.05);
+}
+
+/* =======================
+   THEME TOGGLE (SAME STYLE)
+======================= */
+
+.theme-toggle {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.4);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    backdrop-filter: blur(6px);
+}
+
+body[data-theme="dark"] .theme-toggle {
+    background: rgba(30, 30, 30, 0.6);
+}
+
+/* =======================
+   MAIN CONTENT
+======================= */
+
+.content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+/* =======================
+   AUTH CARD
+======================= */
+
+.auth-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 36px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+}
+
+body[data-theme="dark"] .auth-card {
+    background: rgba(20, 20, 20, 0.88);
+}
+
+.auth-card h2 {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.auth-subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 26px;
+}
+
+/* =======================
+   FORM
+======================= */
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+}
+
+.auth-form label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.auth-form input {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 15px;
+    color: var(--text);
+}
+
+body[data-theme="dark"] .auth-form input {
+    background: rgba(30, 30, 30, 0.6);
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* =======================
+   BUTTON
+======================= */
+
+.btn {
+    height: 46px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.full-width {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* =======================
+   SWITCH LINK
+======================= */
+
+.auth-switch {
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.auth-switch a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* =======================
+   FOOTER
+======================= */
+
+.footer {
+    text-align: center;
+    padding: 14px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* =======================
+   ANIMATION
+======================= */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =======================
+   MOBILE
+======================= */
+
+@media (max-width: 600px) {
+    .auth-card {
+        padding: 28px 22px;
+    }
+
+    .auth-card h2 {
+        font-size: 24px;
+    }
+
+    .logo {
+        height: 44px;
+    }
+}
+
+
+
+/* =======================
+   THEME VARIABLES
+======================= */
+
+:root {
+    --bg: #ffffff;
+    --text: #111111;
+    --muted: #555;
+    --primary: #000000;
+    --border: #ddd;
+}
+
+body[data-theme="dark"] {
+    --bg: #0f0f0f;
+    --text: #f5f5f5;
+    --muted: #aaa;
+    --primary: #ffffff;
+    --border: #333;
+}
+
+/* =======================
+   GLOBAL
+======================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* =======================
+   BACKGROUNDS
+======================= */
+
+body {
+    background:
+        radial-gradient(circle at top,
+            rgba(255, 255, 255, 0.40),
+            rgba(255, 255, 255, 0.40)),
+        url("../images/bg-light.jpg") center / cover no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    background:
+        radial-gradient(circle at top,
+            rgba(15, 15, 15, 0.40),
+            rgba(10, 10, 10, 0.40)),
+        url("../images/bg-dark.jpg") center / cover no-repeat;
+}
+
+/* =======================
+   LAYOUT
+======================= */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =======================
+   HEADER
+======================= */
+
+.header {
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+}
+
+/* =======================
+   LOGO
+======================= */
+.logo {
+    height: 56px;
+    width: auto;
+    object-fit: contain;
+
+    /* REMOVE harsh effects */
+    filter: none;
+
+    /* soften black background */
+    border-radius: 10px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    height: 70px;
+    width: auto;
+    object-fit: contain;
+    background: transparent;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.logo-link:hover .logo {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+
+body[data-theme="dark"] .logo {
+    filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.2));
+}
+
+body[data-theme="dark"] .logo-link:hover .logo {
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.3));
+}
+
+/* =======================
+   THEME TOGGLE
+======================= */
+
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+/* =======================
+   CONTENT
+======================= */
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+    animation: fadeUp 0.6s ease;
+}
+
+.content h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.content p {
+    color: var(--muted);
+    margin-bottom: 30px;
+}
+
+/* =======================
+   BUTTONS
+======================= */
+
+.actions {
+    display: flex;
+    gap: 16px;
+}
+
+.btn {
+    padding: 12px 26px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+.btn.secondary {
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* =======================
+   FOOTER
+======================= */
+
+.footer {
+    text-align: center;
+    padding: 14px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* =======================
+   ANIMATION
+======================= */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =======================
+   MOBILE
+======================= */
+
+@media (max-width: 600px) {
+    .content h1 {
+        font-size: 32px;
+    }
+
+    .header {
+        padding: 16px 20px;
+    }
+}
+
+.btn.outline {
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: transparent;
+}
+
+/* =======================
+   LOGOUT MODAL
+======================= */
+
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.logout-overlay.show {
+    display: flex;
+}
+
+.logout-modal {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--border);
+    text-align: center;
+    animation: fadeUp 0.3s ease;
+}
+
+body[data-theme="dark"] .logout-modal {
+    background: rgba(20, 20, 20, 0.95);
+}
+
+.logout-modal h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.logout-modal p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+
+/* =======================
+   FORM ERROR MESSAGE
+======================= */
+
+.form-error {
+    background: rgba(229, 57, 53, 0.12);
+    color: #e53935;
+    border: 1px solid rgba(229, 57, 53, 0.4);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* MODERN TABLE */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.modern-table thead {
+    background: var(--primary);
+    color: white;
+}
+
+.modern-table th,
+.modern-table td {
+    padding: 14px;
+    text-align: center;
+}
+
+.modern-table tbody tr {
+    background: var(--card-bg);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modern-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* IMAGE */
+.restaurant-img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* ACTIONS */
+.action-cell {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* BUTTON VARIANTS */
+.btn.small {
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.btn.danger {
+    background: #e53935;
+    color: white;
+}
+
+.btn.danger:hover {
+    background: #c62828;
+}
+
+/* EMPTY STATE */
+.empty-text {
+    text-align: center;
+    margin-top: 30px;
+    opacity: 0.7;
+}
+
+/* =======================
+   CONTENT FIX FOR LISTS
+======================= */
+
+.content-top {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+
+/* =======================
+   WIDE CARD
+======================= */
+
+.wide-card {
+    max-width: 1100px;
+    width: 100%;
+    background: transparent;
+    /* 🔥 KEY */
+    border: none;
+    /* 🔥 KEY */
+    padding: 0;
+    /* 🔥 KEY */
+}
+
+
+/* =======================
+   RESTAURANT LIST
+======================= */
+
+.restaurant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+/* ROW */
+.restaurant-row {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    align-items: center;
+    gap: 20px;
+
+    padding: 18px 22px;
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+
+body[data-theme="dark"] .restaurant-row {
+    background: rgba(20, 20, 20, 0.8);
+}
+
+/* IMAGE */
+.restaurant-img-lg {
+    width: 140px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* INFO */
+.restaurant-info h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.restaurant-info p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+/* ACTIONS */
+.restaurant-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* =======================
+   MOBILE
+======================= */
+
+@media (max-width: 768px) {
+    .restaurant-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .restaurant-img-lg {
+        width: 100%;
+        height: 180px;
+    }
+
+    .restaurant-actions {
+        justify-content: center;
+    }
+}
+
+.restaurant-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+body[data-theme="dark"] .restaurant-row {
+    background: rgba(20, 20, 20, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.restaurant-list {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.restaurant-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-title h2 {
+    font-size: 28px;
+}
+
+.page-title p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.restaurant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.restaurant-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+body[data-theme="dark"] .restaurant-row {
+    background: rgba(20, 20, 20, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.restaurant-image img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.restaurant-info h3 {
+    margin-bottom: 4px;
+}
+
+.restaurant-info .cuisine {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.restaurant-info .rating {
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.restaurant-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.header {
+    position: relative;
+    z-index: 2000;
+}
+
+body[data-theme="dark"] .profile-dropdown {
+    background: rgba(22, 22, 22, 0.95);
+    color: #f5f5f5;
+    border: 1px solid #333;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.profile-dropdown.show {
+    display: flex;
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    gap: 10px;
+}
+
+.dropdown-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body[data-theme="dark"] .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-item.logout {
+    color: #e53935;
+    font-weight: 600;
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(229, 57, 53, 0.15);
+}
+
+/* ===========================
+   MENU PAGE CENTER FIX (FINAL)
+=========================== */
+
+.content-top {
+    align-items: flex-start;
+}
+
+
+.restaurant-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    /* ⭐ THIS IS THE KEY */
+}
+
+.content.content-top {
+    align-items: center;
+}
+
+
+/* Center the Add Menu card */
+.menu-center {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.menu-card {
+    width: 100%;
+    max-width: 600px;
+}
+
+/* ===========================
+   MENU PAGE FINAL ALIGNMENT
+=========================== */
+
+.page-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.menu-center {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.menu-card {
+    max-width: 620px;
+    width: 100%;
+}
+
+/* Center Back button */
+.back-center {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+}
+
+/* ============================
+   MENU PAGE ONLY FIX
+============================ */
+
+.menu-page .restaurant-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu-page .menu-center {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.menu-page .menu-card {
+    width: 100%;
+    max-width: 620px;
+}
+
+.restaurant-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* =====================================================
+   RESTAURANT LIST – VISUAL POLISH
+===================================================== */
+
+/* Slightly wider container for balance */
+.restaurant-container {
+    max-width: 1150px;
+}
+
+/* Restaurant card refinement */
+.restaurant-row {
+    background: rgba(255,255,255,0.72);
+    border-radius: 20px;
+    padding: 20px 26px;
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Dark theme card */
+body[data-theme="dark"] .restaurant-row {
+    background: rgba(22,22,22,0.75);
+    box-shadow:
+        0 14px 32px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Smooth hover */
+.restaurant-row:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 18px 40px rgba(0,0,0,0.14);
+}
+
+/* =====================================================
+   IMAGE FIX
+===================================================== */
+
+.restaurant-image img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* =====================================================
+   TEXT IMPROVEMENT
+===================================================== */
+
+.restaurant-info h3 {
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.restaurant-info .cuisine {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.restaurant-info .rating {
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* =====================================================
+   ACTION BUTTONS – PREMIUM LOOK
+===================================================== */
+
+.restaurant-actions {
+    gap: 10px;
+}
+
+/* Base button */
+.restaurant-actions .btn {
+    border-radius: 10px;
+    font-size: 14px;
+    padding: 8px 14px;
+}
+
+/* Update */
+.btn.outline {
+    background: rgba(255,255,255,0.6);
+}
+
+body[data-theme="dark"] .btn.outline {
+    background: rgba(40,40,40,0.8);
+}
+
+/* Delete */
+.btn.danger {
+    box-shadow: 0 6px 16px rgba(229,57,53,0.35);
+}
+
+/* Menu (Primary CTA) */
+.btn.primary {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
+/* =====================================================
+   PAGE TITLE POLISH
+===================================================== */
+
+.page-title h2 {
+    font-size: 30px;
+    letter-spacing: 0.3px;
+}
+
+.page-title p {
+    margin-top: 6px;
+    font-size: 15px;
+}
+
+/* =====================================================
+   MOBILE IMPROVEMENTS
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .restaurant-row {
+        padding: 18px;
+    }
+
+    .restaurant-image img {
+        width: 100%;
+        height: 180px;
+    }
+
+    .restaurant-info {
+        margin-top: 10px;
+    }
+
+    .restaurant-actions {
+        margin-top: 14px;
+    }
+}
+
+
+/* =====================================================
+   INCREASE RESTAURANT CARD WIDTH (TITLE CARD)
+===================================================== */
+
+/* Allow wider content area */
+.restaurant-container {
+    max-width: 1300px;   /* was ~1100px */
+}
+
+/* Make each restaurant card wider */
+.restaurant-row {
+    width: 100%;
+    max-width: 1200px;   /* controls card width */
+    margin-left: auto;
+    margin-right: auto;
+}
+/* Adjust image size accordingly */
+
+.restaurant-container {
+    max-width: 1400px;
+}
+
+.restaurant-row {
+    max-width: 1350px;
+}
+
+.restaurant-row {
+    grid-template-columns: 120px 1fr auto;
+}
+
+/* ==========================================
+   FIX RESTAURANT LIST WIDTH & LAYOUT (FINAL)
+========================================== */
+
+/* Wider main container */
+.restaurant-container {
+    width: 100%;
+    max-width: 1400px;     /* BIGGER AREA */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Center list properly */
+.restaurant-list {
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Make card stretch full width */
+.restaurant-row {
+    width: 100%;
+    max-width: 100%;
+    
+    display: grid;
+    grid-template-columns: 160px 1fr 320px; /* 👈 KEY CHANGE */
+    gap: 24px;
+
+    padding: 22px 28px;
+}
+
+/* Bigger image */
+.restaurant-image img {
+    width: 160px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+/* Improve text spacing */
+.restaurant-info h3 {
+    font-size: 20px;
+}
+
+.restaurant-info .cuisine {
+    font-size: 15px;
+}
+
+.restaurant-info .rating {
+    font-size: 15px;
+}
+
+/* Actions aligned nicely */
+.restaurant-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Button sizing */
+.btn.small {
+    padding: 10px 18px;
+    font-size: 14px;
+}
+
+/* ===============================
+   DARK THEME FORM FIX
+=============================== */
+
+body[data-theme="dark"] .auth-card {
+    background: rgba(20, 20, 20, 0.85);
+    color: #fff;
+}
+
+/* INPUT + TEXTAREA */
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #333;
+}
+
+body[data-theme="dark"] input::placeholder,
+body[data-theme="dark"] textarea::placeholder {
+    color: #aaa;
+}
+
+/* TEXTAREA HEIGHT FIX */
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* CHECKBOX ALIGNMENT */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+    font-size: 14px;
+}
+
+/* CHECKBOX COLOR */
+body[data-theme="dark"] .checkbox-row input[type="checkbox"] {
+    accent-color: #4caf50;
+}
+
+/* BUTTON FIX */
+body[data-theme="dark"] .btn.primary {
+    background: #ffffff;
+    color: #000;
+}
+
+body[data-theme="dark"] .btn.primary:hover {
+    background: #e6e6e6;
+}
+
+body:not([data-theme="dark"]) textarea {
+    background: #fff;
+    color: #000;
+}
+
+input {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+/* FORCE DARK TEXTAREA FIX */
+.dark textarea,
+.dark-mode textarea,
+body[data-theme="dark"] textarea {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border: 1px solid #333 !important;
+}
+
+/* FORCE DARK INPUT FIX */
+.dark input,
+.dark-mode input,
+body[data-theme="dark"] input {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border: 1px solid #333 !important;
+}
+
+/* PLACEHOLDER */
+.dark textarea::placeholder,
+.dark input::placeholder {
+    color: #aaa;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* MENU LIST */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 30px;
+}
+
+/* MENU ROW */
+.menu-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 120px 120px;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 24px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+/* IMAGE */
+.menu-img img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* INFO */
+.menu-info h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #fff;
+}
+.menu-info .price {
+    margin-top: 4px;
+    color: #ddd;
+}
+
+/* TYPE */
+.menu-type {
+    font-weight: 600;
+    color: #fff;
+}
+
+/* ACTION */
+.menu-action {
+    text-align: right;
+}
+
+/* DARK SAFE */
+body[data-theme="dark"] .menu-row {
+    background: rgba(0,0,0,0.55);
+}
+/* ===== SOFTEN HEADER BACKGROUND (KEEP DESIGN SAME) ===== */
+.modern-table thead th {
+    background: rgba(0, 0, 0, 0.35) !important; /* soft black, not solid */
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Remove harsh bar look */
+.modern-table thead {
+    background: transparent !important;
+    backdrop-filter: blur(6px); /* matches page blur */
+}
+
+.modern-table thead th {
+    background: transparent !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6); /* improves readability */
+}
+
+/* ================================
+   CUSTOMER RESTAURANT CARD FIX
+================================ */
+
+/* Container alignment */
+.restaurant-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Restaurant list spacing */
+.restaurant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    margin-top: 40px;
+}
+
+/* Restaurant card */
+.restaurant-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 140px 1fr 160px;
+    align-items: center;
+
+    padding: 22px 30px;
+    border-radius: 22px;
+
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.10);
+
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Hover */
+.restaurant-row:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.14);
+}
+
+/* Dark theme */
+body[data-theme="dark"] .restaurant-row {
+    background: rgba(22, 22, 22, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+}
+
+/* Image */
+.restaurant-image img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+}
+
+/* Text section */
+.restaurant-info {
+    text-align: center;
+}
+
+.restaurant-info h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.restaurant-info .cuisine {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.restaurant-info .rating {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Action button area */
+.restaurant-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Menu button */
+.restaurant-actions .btn.primary {
+    padding: 12px 22px;
+    font-size: 15px;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+}
+
+/* ================================
+   MOBILE FIX
+================================ */
+
+@media (max-width: 768px) {
+
+    .restaurant-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 18px;
+        padding: 22px;
+    }
+
+    .restaurant-image img {
+        width: 100%;
+        height: 180px;
+    }
+
+    .restaurant-actions {
+        justify-content: center;
+    }
+}
+
+.cart-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cart-qty {
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+    color: #666;
+}
+
+.qty-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ADD button */
+.add-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.add-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Quantity box */
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #030303;
+    border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    animation: popIn 0.25s ease;
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.qty-count {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* Hide */
+.hidden {
+    display: none;
+}
+
+/* Animation */
+@keyframes popIn {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ===== CART BUTTON ===== */
+
+.cart-btn {
+    position: relative;
+    font-size: 20px;
+}
+
+/* Cart icon */
+.cart-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* Count bubble (like your image) */
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: #ff3b3b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px #fff;
+}
+
+/* Dark theme fix */
+.dark-theme .cart-badge {
+    box-shadow: 0 0 0 2px #0f172a;
+}
+
+/* REMOVE underline from header icon buttons */
+.header-actions a {
+    text-decoration: none !important;
+}
+
+/* Cart button specific */
+.cart-btn {
+    text-decoration: none !important;
+    border: none;
+}
+
+/* Prevent underline on hover/focus */
+.cart-btn:hover,
+.cart-btn:focus {
+    text-decoration: none !important;
+}
+
+/* ========== FORCE FIX CART ICON ========== */
+
+.cart-btn {
+    text-decoration: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0;
+}
+
+.cart-btn::after,
+.cart-btn::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Wrapper to control size */
+.cart-wrapper {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Force image size */
+.cart-wrapper img {
+    width: 18px !important;
+    height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    object-fit: contain;
+    display: block;
+}
+
+/* Red count badge */
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff3b3b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== FORCE STOP STRAY BACKGROUND / ICON ===== */
+body::before,
+body::after,
+.page::before,
+.page::after,
+.header::before,
+.header::after {
+    content: none !important;
+    display: none !important;
+}
+
+.header {
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== CART ICON FIX ===== */
+.cart-btn {
+    text-decoration: none !important;
+    background: none !important;
+    border: none !important;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.cart-icon-box {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body[data-theme="dark"] .cart-icon-box  {
+    background: rgba(30, 30, 30, 0.6);
+}
+
+.cart-icon-box img {
+    height: 36px;
+    width: 36px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Cart count badge (like Swiggy/Zomato) */
+.cart-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff3b3b;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================= */
+/* DARK THEME – GLOBAL */
+/* ========================= */
+
+
+/* ========================= */
+/* MENU PAGE FIX */
+/* ========================= */
+
+body[data-theme="dark"] .modern-table thead th {
+    color: #f8fafc;
+    border-bottom: 1px solid #1e293b;
+}
+
+body[data-theme="dark"] .modern-table tbody tr {
+    background: transparent;
+    border-bottom: 1px solid #1e293b;
+}
+
+body[data-theme="dark"] .modern-table td {
+    color: #e5e7eb;
+}
+
+/* Description text */
+body[data-theme="dark"] .modern-table td:nth-child(3) {
+    color: #cbd5f5;
+}
+
+/* Price highlight */
+body[data-theme="dark"] .modern-table td:nth-child(4) {
+    color: #fefefc;
+    font-weight: 600;
+}
+
+/* ADD button */
+body[data-theme="dark"] .add-btn {
+    background: #000;
+    color: #fff;
+}
+
+/* Quantity box */
+body[data-theme="dark"] .qty-box {
+    background: #fafafb;
+    border: 1px solid #1e293b;
+}
+
+body[data-theme="dark"] .qty-btn {
+    color: #000000;
+}
+
+/* ========================= */
+/* ADD BUTTON – LIGHT THEME */
+/* ========================= */
+
+.add-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* Hover (optional) */
+.add-btn:hover {
+    opacity: 0.85;
+}
+
+/* ========================= */
+/* ADD BUTTON – DARK THEME */
+/* ========================= */
+
+body[data-theme="dark"] .add-btn {
+    background: #ffffff;
+    color: #000000;
+}
+
+body[data-theme="dark"] .add-btn {
+    box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+}
+
+/* Quantity number – default (light theme) */
+.qty-box .qty-count {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Quantity number – dark theme FIX */
+body[data-theme="dark"] .qty-box .qty-count {
+    color: #000000;
+}
+
+
+body {
+    background:
+        radial-gradient(circle at top,
+            rgba(255,255,255,0.30),
+            rgba(255,255,255,0.30)
+        ),
+        url("../images/bg-light.jpg") center / cover no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    background:
+        radial-gradient(circle at top,
+            rgba(15,15,15,0.40),
+            rgba(10,10,10,0.40)
+        ),
+        url("../images/bg-dark.jpg") center / cover no-repeat;
+        background-attachment: fixed;
+}
+
+/* ===============================
+   PROFILE DROPDOWN – CLEAN & WORKING
+================================ */
+.profile-menu {
+    position: relative;
+}
+
+.profile-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 12px);   /* opens BELOW avatar */
+
+    min-width: 240px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e5e5;
+
+    /* ❌ remove blur & heavy shadow */
+    box-shadow: none;
+    backdrop-filter: none;
+
+    padding: 8px 0;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.2s ease;
+
+    z-index: 5000;
+}
+
+/* SHOW STATE */
+.profile-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.header {
+    position: relative;
+    z-index: 4000;
+    overflow: visible; /* 🔥 REQUIRED */
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.profile-header strong {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #ededed;
+    margin: 6px 0;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #111;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-item:hover {
+    background: #f5f5f5;
+}
+
+.dropdown-item.logout {
+    color: #e53935;
+    font-weight: 600;
+}
+
+body[data-theme="dark"] .profile-dropdown {
+    background: #111;
+    border: 1px solid #2a2a2a;
+}
+
+body[data-theme="dark"] .dropdown-item {
+    color: #f5f5f5;
+}
+
+body[data-theme="dark"] .dropdown-item:hover {
+    background: #1f1f1f;
+}
+
+body[data-theme="dark"] .dropdown-divider {
+    background: #2a2a2a;
+}
+
+
+/* =======================
+   LOGOUT MODAL
+======================= */
+
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.logout-overlay.show {
+    display: flex;
+}
+
+.logout-modal {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--border);
+    text-align: center;
+    animation: fadeUp 0.3s ease;
+}
+
+body[data-theme="dark"] .logout-modal {
+    background: rgba(20,20,20,0.95);
+}
+
+.logout-modal h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.logout-modal p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+/* =======================
+   FORM ERROR MESSAGE
+======================= */
+
+.form-error {
+    background: rgba(229, 57, 53, 0.12);
+    color: #e53935;
+    border: 1px solid rgba(229, 57, 53, 0.4);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+
+
+/* === UNIVERSAL ICON BUTTON === */
+.icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.15);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+/* CENTER EVERYTHING */
+.icon-btn .icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px; /* emoji size */
+    line-height: 1;
+}
+
+/* FOR IMAGE ICONS */
+.icon-btn .icon img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+}
