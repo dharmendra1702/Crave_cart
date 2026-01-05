@@ -16,13 +16,14 @@ class User(models.Model):
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
-    picture = models.URLField()
+    picture = models.URLField(blank=True, null=True)
     cuisine = models.CharField(max_length=100)
-    rating = models.DecimalField(max_digits=2, decimal_places=1)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
     location = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
 
 
 class Item(models.Model):

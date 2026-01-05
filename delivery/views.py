@@ -110,24 +110,35 @@ def user_dashboard(request):
 def open_add_restaurant(request):
     return render(request, 'add_restaurant.html')
 
+from decimal import Decimal, InvalidOperation
+
 def add_restaurant(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        picture = request.POST.get('picture')
-        cuisine = request.POST.get('cuisine')
-        rating = request.POST.get('rating')
-        location = request.POST.get('location')
+        name = request.POST.get('name', '').strip()
+        picture = request.POST.get('picture', '').strip()
+        cuisine = request.POST.get('cuisine', '').strip()
+        rating_raw = request.POST.get('rating', '').strip()
+        location = request.POST.get('location', '').strip()
 
-        # check duplicate
+        if not name:
+            return render(request, "add_restaurant.html", {
+                "error": "Restaurant name is required"
+            })
+
+        # ✅ SAFE DECIMAL CONVERSION
+        try:
+            rating = Decimal(rating_raw)
+        except (InvalidOperation, ValueError):
+            rating = Decimal("0.0")
+
         if Restaurant.objects.filter(name=name).exists():
             return render(request, "restaurant_fail.html", {
                 "name": name
             })
 
-        # save restaurant
         restaurant = Restaurant.objects.create(
             name=name,
-            picture=picture,
+            picture=picture or None,
             cuisine=cuisine,
             rating=rating,
             location=location
@@ -138,6 +149,7 @@ def add_restaurant(request):
         })
 
     return render(request, 'admin_dashboard.html')
+
 
 def open_show_restaurants(request):
     restaurants = Restaurant.objects.all()
