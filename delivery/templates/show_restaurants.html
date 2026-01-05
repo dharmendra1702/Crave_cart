@@ -84,8 +84,14 @@
 
                 <!-- IMAGE -->
                 <div class="restaurant-image">
-                    <img src="{{ r.picture }}" alt="{{ r.name }}">
+                    {% if r.picture %}
+                        <img src="{{ r.picture }}" alt="{{ r.name }}">
+                    {% else %}
+                        <img src="{% static 'images/default-restaurant.png' %}"
+                            alt="No Image Available">
+                    {% endif %}
                 </div>
+
 
                 <!-- DETAILS -->
                 <div class="restaurant-info">

@@ -90,17 +90,28 @@
             </div>
 
             <!-- IMAGE -->
-            {% if restaurant.picture %}
-                <img src="{{ restaurant.picture }}"
-                     alt="{{ restaurant.name }}"
-                     style="
-                        width:100%;
-                        max-height:220px;
-                        object-fit:cover;
-                        border-radius:12px;
-                        margin-top:18px;
-                     ">
-            {% endif %}
+{% if restaurant.picture %}
+    <img src="{{ restaurant.picture }}"
+         alt="{{ restaurant.name }}"
+         style="
+            width:100%;
+            max-height:220px;
+            object-fit:cover;
+            border-radius:12px;
+            margin-top:18px;
+         ">
+{% else %}
+    <img src="{% static 'images/default-restaurant.png' %}"
+         alt="No Image Available"
+         style="
+            width:100%;
+            max-height:220px;
+            object-fit:cover;
+            border-radius:12px;
+            margin-top:18px;
+         ">
+{% endif %}
+
 
             <!-- ACTIONS -->
             <a href="{% url 'open_add_restaurant' %}" class="btn secondary full-width">

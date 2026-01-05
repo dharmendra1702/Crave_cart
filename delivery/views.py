@@ -174,26 +174,52 @@ def open_update_restaurant(request, restaurant_id):
     restaurant = Restaurant.objects.get(id = restaurant_id)
     return render(request, 'update_restaurant.html', {"restaurant" : restaurant})
 
-def update_restaurant(request, restaurant_id):
-    restaurant = Restaurant.objects.get(id = restaurant_id)
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        picture = request.POST.get('picture')
-        cuisine = request.POST.get('cuisine')
-        rating = request.POST.get('rating')
-        location = request.POST.get('location')
-        
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import get_object_or_404, render, redirect
+
+def update_restaurant(request, id):
+    restaurant = get_object_or_404(Restaurant, id=id)
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        picture = request.POST.get("picture", "").strip()
+        cuisine = request.POST.get("cuisine", "").strip()
+        rating_raw = request.POST.get("rating", "").strip()
+        location = request.POST.get("location", "").strip()
+
+        # REQUIRED FIELDS
+        if not name or not cuisine or not location:
+            return render(request, "update_restaurant.html", {
+                "restaurant": restaurant,
+                "error": "Name, cuisine and location are required"
+            })
+
+        # SAFE RATING
+        try:
+            rating = Decimal(rating_raw)
+        except (InvalidOperation, ValueError):
+            rating = Decimal("0.0")
+
+        if rating < 0 or rating > 10:
+            rating = Decimal("0.0")
+
+        # SAFE IMAGE URL
+        if picture and not picture.startswith(("http://", "https://")):
+            picture = None
+
         restaurant.name = name
         restaurant.picture = picture
         restaurant.cuisine = cuisine
         restaurant.rating = rating
         restaurant.location = location
-
         restaurant.save()
 
-    return render(request, "restaurant_update_success.html", {
-            "restaurant": restaurant
-        })
+        return redirect("open_show_restaurants")
+
+    return render(request, "update_restaurant.html", {
+        "restaurant": restaurant
+    })
+
 
 def delete_restaurant(request, restaurant_id):
     if request.method == "POST":
