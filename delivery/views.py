@@ -111,6 +111,7 @@ def open_add_restaurant(request):
     return render(request, 'add_restaurant.html')
 
 from decimal import Decimal, InvalidOperation
+from django.db import IntegrityError
 
 def add_restaurant(request):
     if request.method == 'POST':
@@ -120,29 +121,42 @@ def add_restaurant(request):
         rating_raw = request.POST.get('rating', '').strip()
         location = request.POST.get('location', '').strip()
 
-        if not name:
+        # 🔴 REQUIRED FIELDS CHECK
+        if not name or not cuisine or not location:
             return render(request, "add_restaurant.html", {
-                "error": "Restaurant name is required"
+                "error": "Name, cuisine and location are required"
             })
 
-        # ✅ SAFE DECIMAL CONVERSION
+        # ✅ SAFE RATING
         try:
             rating = Decimal(rating_raw)
         except (InvalidOperation, ValueError):
             rating = Decimal("0.0")
+
+        if rating < 0 or rating > 10:
+            rating = Decimal("0.0")
+
+        # ✅ SAFE URL (Postgres strict)
+        if picture and not picture.startswith(("http://", "https://")):
+            picture = None
 
         if Restaurant.objects.filter(name=name).exists():
             return render(request, "restaurant_fail.html", {
                 "name": name
             })
 
-        restaurant = Restaurant.objects.create(
-            name=name,
-            picture=picture or None,
-            cuisine=cuisine,
-            rating=rating,
-            location=location
-        )
+        try:
+            restaurant = Restaurant.objects.create(
+                name=name,
+                picture=picture,
+                cuisine=cuisine,
+                rating=rating,
+                location=location
+            )
+        except IntegrityError as e:
+            return render(request, "add_restaurant.html", {
+                "error": f"Database error: {e}"
+            })
 
         return render(request, "restaurant_success.html", {
             "restaurant": restaurant
