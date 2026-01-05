@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'delivery'
+    'delivery.apps.DeliveryConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -176,19 +177,3 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-def create_admin():
-    if os.environ.get("CREATE_SUPERUSER") == "true":
-        User = get_user_model()
-        username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
-        password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
-        email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
-
-        if not User.objects.filter(username=username).exists():
-            User.objects.create_superuser(
-                username=username,
-                email=email,
-                password=password
-            )
-            print("✅ Superuser created")
-
-create_admin()
