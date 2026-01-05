@@ -276,8 +276,6 @@ def view_menu(request, restaurant_id):
 
 
 @ensure_csrf_cookie
-@ensure_csrf_cookie
-@ensure_csrf_cookie
 def open_customer_show_restaurants(request):
     username = request.session.get("username")
     if not username:
@@ -288,11 +286,12 @@ def open_customer_show_restaurants(request):
     cart = Cart.objects.filter(username=username).first()
     cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart)) if cart else 0
 
-    return render(request, "customer_show_restaurants.html", {
-        "restaurants": restaurants,
-        "username": username,
-        "cart_count": cart_count
-    })
+    return render(request, "delivery/customer_show_restaurants.html", {
+    "restaurants": restaurants,
+    "username": username,
+    "cart_count": cart_count
+})
+
 
 
 
