@@ -454,8 +454,11 @@ body[data-theme="dark"] .coupon-modal {
 
     <div class="summary-row">
         <span>Items</span>
-        <span>{{ cart_count }}</span>
+        <span>
+            {{ cart_count }} × {{ item_unit_price }} = ₹{{ product_total|floatformat:2 }}
+        </span>
     </div>
+
 
     <div class="summary-row">
         <span>Delivery</span>

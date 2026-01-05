@@ -288,8 +288,7 @@ def open_customer_show_restaurants(request):
 
     return render(request, "delivery/customer_show_restaurants.html", {
     "restaurants": restaurants,
-    "username": username,
-    "cart_count": cart_count
+    "username": username
 })
 
 
@@ -339,27 +338,33 @@ def view_cart(request):
     cart = Cart.objects.filter(username=username).first()
     cart_items = []
     cart_count = 0
+    product_total = 0
 
     if cart:
         for ci in CartItem.objects.filter(cart=cart):
+            subtotal = ci.item.price * ci.quantity
+            product_total += subtotal
+            cart_count += ci.quantity
+
             cart_items.append({
                 "item": ci.item,
                 "quantity": ci.quantity,
-                "subtotal": ci.item.price * ci.quantity
+                "subtotal": subtotal
             })
-            cart_count += ci.quantity
+
+    # 🔥 average price per item (safe)
+    item_unit_price = round(product_total / cart_count, 2) if cart_count > 0 else 0
 
     totals = calculate_cart_totals(request, cart)
     request.session["checkout_data"] = totals
 
-    remaining = max(99 - totals["product_total"], 0)
-
     return render(request, "cart.html", {
         "cart_items": cart_items,
         "cart_count": cart_count,
-        "remaining": remaining,
+        "item_unit_price": item_unit_price,   # ✅ NEW
         **totals
     })
+
 
 
 

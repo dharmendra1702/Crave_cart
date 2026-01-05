@@ -36,18 +36,18 @@
 
     <!-- CART (BETWEEN THEME & PROFILE) -->
     {% if request.session.username %}
-<a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
-    <span class="cart-icon-box icon">
-        <img
-            id="cartIcon"
-            alt="Cart"
-        >
-        {% if cart_count and cart_count > 0 %}
-            <span class="cart-count">{{ cart_count }}</span>
-        {% endif %}
-    </span>
-</a>
-{% endif %}
+        <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
+            <span class="cart-icon-box">
+                <img
+                    id="cartIcon"
+                    alt="Cart"
+                >
+                {% if cart_count and cart_count > 0 %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </span>
+        </a>
+    {% endif %}
 
 
     <!-- PROFILE -->
