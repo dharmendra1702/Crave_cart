@@ -78,14 +78,20 @@
             <h2>Add New Restaurant</h2>
             <p class="auth-subtitle">Fill restaurant details</p>
 
-            <form method="POST" action="{% url 'add_restaurant' %}" class="auth-form">
+            <form method="POST" action="{% url 'add_restaurant' %}" enctype="multipart/form-data" class="auth-form">
                 {% csrf_token %}
 
                 <label>Restaurant Name</label>
                 <input type="text" name="name" placeholder="Paradise Biryani" required>
 
-                <label>Picture URL</label>
-                <input name="picture" type="text" placeholder="https://example.com/image.jpg">
+                <label>Image URL</label>
+                <input type="text" name="picture" placeholder="https://example.com/image.jpg">
+
+                <div style="text-align:center; margin:10px 0;">OR</div>
+
+                <label>Upload Image</label>
+                <input type="file" name="picture_file" accept="image/*">
+
 
                 <label>Cuisine</label>
                 <input type="text" name="cuisine" placeholder="Indian, Chinese" required>

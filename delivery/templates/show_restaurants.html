@@ -84,12 +84,14 @@
 
                 <!-- IMAGE -->
                 <div class="restaurant-image">
-                    {% if r.picture %}
-                        <img src="{{ r.picture }}" alt="{{ r.name }}">
+                    {% if r.picture_file %}
+                        <img src="{{ r.picture_file.url }}">
+                    {% elif r.picture %}
+                        <img src="{{ r.picture }}">
                     {% else %}
-                        <img src="{% static 'images/default-restaurant.png' %}"
-                            alt="No Image Available">
+                        <img src="{% static 'images/default-restaurant.png' %}">
                     {% endif %}
+
                 </div>
 
 

@@ -16,10 +16,17 @@ class User(models.Model):
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
-    picture = models.URLField(blank=True, null=True)
-    cuisine = models.CharField(max_length=100)
-    rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    cuisine = models.CharField(max_length=255)
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
     location = models.CharField(max_length=255)
+
+    picture = models.URLField(blank=True, null=True)
+    picture_file = models.ImageField(
+        upload_to="restaurants/",
+        blank=True,
+        null=True
+    )
+
 
     def __str__(self):
         return self.name
