@@ -136,15 +136,16 @@ def add_restaurant(request):
         if rating < 0 or rating > 10:
             rating = Decimal("0.0")
 
-        # ✅ SAFE URL (Postgres strict)
         picture = request.POST.get("picture", "").strip()
 
         if picture:
-            # ✅ allow base64 images
             if picture.startswith("data:image"):
-                pass
-            # ✅ auto-fix normal URLs
-            elif not picture.lower().startswith(("http://", "https://")):
+                return render(request, "update_restaurant.html", {
+                    "restaurant": restaurant,
+                    "error": "Base64 images are not supported. Please use an image URL."
+                })
+
+            if not picture.lower().startswith(("http://", "https://")):
                 picture = "https://" + picture
         else:
             picture = None
@@ -217,11 +218,13 @@ def update_restaurant(request, restaurant_id):
         picture = request.POST.get("picture", "").strip()
 
         if picture:
-            # ✅ allow base64 images
             if picture.startswith("data:image"):
-                pass
-            # ✅ auto-fix normal URLs
-            elif not picture.lower().startswith(("http://", "https://")):
+                return render(request, "update_restaurant.html", {
+                    "restaurant": restaurant,
+                    "error": "Base64 images are not supported. Please use an image URL."
+                })
+
+            if not picture.lower().startswith(("http://", "https://")):
                 picture = "https://" + picture
         else:
             picture = None
