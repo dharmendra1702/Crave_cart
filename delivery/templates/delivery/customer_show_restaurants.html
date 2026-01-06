@@ -103,11 +103,12 @@
 
                 <!-- IMAGE -->
                 <div class="restaurant-image">
-                    {% if r.picture %}
-                        <img src="{{ r.picture }}" alt="{{ r.name }}">
+                    {% if r.picture_file %}
+                        <img src="{{ r.picture_file.url }}">
+                    {% elif r.picture %}
+                        <img src="{{ r.picture }}">
                     {% else %}
-                        <img src="{% static 'images/default-restaurant.png' %}"
-                            alt="No Image Available">
+                        <img src="{% static 'images/default-restaurant.png' %}">
                     {% endif %}
                 </div>
 
@@ -188,6 +189,127 @@ function openDeleteRestaurantModal(id) {
     form.action = `/delete_restaurant/${id}`;
     document.getElementById("deleteRestaurantOverlay").classList.add("show");
 }
+
+
+
+const imageUrl = document.getElementById("imageUrl");
+const imageFile = document.getElementById("imageFile");
+const preview = document.getElementById("imagePreview");
+const previewImg = document.getElementById("previewImg");
+const fileName = document.getElementById("fileName");
+
+/* 🔹 Validate image URL */
+function isValidImageUrl(url) {
+    return /^https?:\/\/.*\.(jpg|jpeg|png|webp|gif)$/i.test(url);
+}
+
+/* 🔹 URL input */
+imageUrl.addEventListener("input", () => {
+    const url = imageUrl.value.trim();
+
+    if (url === "") {
+        preview.style.display = "none";
+        imageFile.disabled = false;
+        return;
+    }
+
+    if (!isValidImageUrl(url)) {
+        preview.style.display = "none";
+        return;
+    }
+
+    previewImg.src = url;
+    preview.style.display = "block";
+
+    imageFile.value = "";
+    imageFile.disabled = true;
+    fileName.textContent = "";
+});
+
+/* 🔹 File upload */
+imageFile.addEventListener("change", () => {
+    const file = imageFile.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file");
+        imageFile.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+    fileName.textContent = `Selected file: ${file.name}`;
+});
+
+/* 🔹 Re-enable URL if file cleared */
+imageFile.addEventListener("click", () => {
+    imageUrl.disabled = false;
+});
+
+const clearBtn = document.getElementById("clearImage");
+
+function showClear() {
+    clearBtn.style.display = "block";
+}
+
+function hideClear() {
+    clearBtn.style.display = "none";
+}
+
+clearBtn.addEventListener("click", () => {
+    imageUrl.value = "";
+    imageFile.value = "";
+    imageUrl.disabled = false;
+    imageFile.disabled = false;
+    preview.style.display = "none";
+    fileName.textContent = "";
+    hideClear();
+});
+
+const combo = document.querySelector(".image-combo");
+
+combo.addEventListener("dragover", e => {
+    e.preventDefault();
+    combo.classList.add("dragover");
+});
+
+combo.addEventListener("dragleave", () => {
+    combo.classList.remove("dragover");
+});
+
+combo.addEventListener("drop", e => {
+    e.preventDefault();
+    combo.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+        alert("Only image files allowed");
+        return;
+    }
+
+    imageFile.files = e.dataTransfer.files;
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        previewImg.src = ev.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    fileName.textContent = `Selected file: ${file.name}`;
+    showClear();
+});
 </script>
 </body>
 </html>

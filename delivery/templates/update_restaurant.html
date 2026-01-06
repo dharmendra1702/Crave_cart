@@ -6,8 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
+
+    <!-- Base styles -->
+    <link rel="icon" href="{% static 'images/faviconn.png' %}">
+    <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="{% static 'css/update_restaurant.css' %}">
 </head>
+
+
+<style>
+
+
+</style>
 
 <body>
 <div class="page">
@@ -66,9 +78,7 @@
                 Modify the restaurant details below
             </p>
 
-            <form method="POST"
-                  action="{% url 'update_restaurant' restaurant.id %}"
-                  class="auth-form">
+            <form method="POST" action="{% url 'update_restaurant' restaurant.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <label>Restaurant Name</label>
@@ -77,11 +87,33 @@
                        value="{{ restaurant.name }}"
                        required>
 
-                <label>Picture URL</label>
-                <input type="text"
-                       name="picture"
-                       placeholder="https://example.com/image.jpg"
-                       value="{{ restaurant.picture }}">
+                <label>Restaurant Image</label>
+                <div class="image-combo">
+                    <input type="text"
+                        id="imageUrl"
+                        name="picture"
+                        placeholder="Image URL (https://...)">
+
+                    <label class="upload-btn">
+                        Upload
+                        <input type="file"
+                            id="imageFile"
+                            name="picture_file"
+                            accept="image/*"
+                            hidden>
+                    </label>
+                    <span class="clear-btn" id="clearImage">✕</span>
+                </div>
+
+                <!-- File name -->
+                <p class="file-name" id="fileName"></p>
+
+                <!-- Preview -->
+                <div class="image-preview" id="imagePreview">
+                    <img id="previewImg" alt="Preview">
+                </div>
+
+
 
                 <label>Cuisine</label>
                 <input type="text"
@@ -156,6 +188,127 @@ function openLogoutModal() {
 function confirmLogout() {
     window.location.href = "{% url 'logout' %}";
 }
+
+const imageUrl = document.getElementById("imageUrl");
+const imageFile = document.getElementById("imageFile");
+const preview = document.getElementById("imagePreview");
+const previewImg = document.getElementById("previewImg");
+const fileName = document.getElementById("fileName");
+
+/* 🔹 Validate image URL */
+function isValidImageUrl(url) {
+    return /^https?:\/\/.*\.(jpg|jpeg|png|webp|gif)$/i.test(url);
+}
+
+/* 🔹 URL input */
+imageUrl.addEventListener("input", () => {
+    const url = imageUrl.value.trim();
+
+    if (url === "") {
+        preview.style.display = "none";
+        imageFile.disabled = false;
+        return;
+    }
+
+    if (!isValidImageUrl(url)) {
+        preview.style.display = "none";
+        return;
+    }
+
+    previewImg.src = url;
+    preview.style.display = "block";
+
+    imageFile.value = "";
+    imageFile.disabled = true;
+    fileName.textContent = "";
+});
+
+/* 🔹 File upload */
+imageFile.addEventListener("change", () => {
+    const file = imageFile.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file");
+        imageFile.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+    fileName.textContent = `Selected file: ${file.name}`;
+});
+
+/* 🔹 Re-enable URL if file cleared */
+imageFile.addEventListener("click", () => {
+    imageUrl.disabled = false;
+});
+
+const clearBtn = document.getElementById("clearImage");
+
+function showClear() {
+    clearBtn.style.display = "block";
+}
+
+function hideClear() {
+    clearBtn.style.display = "none";
+}
+
+clearBtn.addEventListener("click", () => {
+    imageUrl.value = "";
+    imageFile.value = "";
+    imageUrl.disabled = false;
+    imageFile.disabled = false;
+    preview.style.display = "none";
+    fileName.textContent = "";
+    hideClear();
+});
+
+const combo = document.querySelector(".image-combo");
+
+combo.addEventListener("dragover", e => {
+    e.preventDefault();
+    combo.classList.add("dragover");
+});
+
+combo.addEventListener("dragleave", () => {
+    combo.classList.remove("dragover");
+});
+
+combo.addEventListener("drop", e => {
+    e.preventDefault();
+    combo.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+        alert("Only image files allowed");
+        return;
+    }
+
+    imageFile.files = e.dataTransfer.files;
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        previewImg.src = ev.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    fileName.textContent = `Selected file: ${file.name}`;
+    showClear();
+});
+
+
 </script>
 
 </body>

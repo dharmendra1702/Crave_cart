@@ -10,6 +10,112 @@
     <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
 </head>
 
+<style>
+    /* ================= IMAGE INPUT (JOINED STYLE) ================= */
+
+.image-combo {
+    display: flex;
+    width: 100%;
+    position: relative;
+}
+
+/* URL input */
+.image-combo input[type="text"] {
+    flex: 1;
+    height: 46px;
+    padding: 0 14px;
+    font-size: 14px;
+    border: 1px solid #dcdcdc;
+    border-right: none;                /* JOIN */
+    border-radius: 12px 0 0 12px;      /* LEFT ROUND */
+    outline: none;
+    background: #fff;
+    color: #111;
+}
+
+/* Upload button */
+.upload-btn {
+    height: 46px;
+    padding: 0 22px;
+    background: #000;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 0 12px 12px 0;      /* RIGHT ROUND */
+    border: 1px solid #dcdcdc;
+    border-left: none;                 /* JOIN */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.upload-btn:hover {
+    background: #222;
+}
+
+/* Drag over effect */
+.image-combo.dragover input {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.06);
+}
+
+/* Clear (✕) button */
+.clear-btn {
+    position: absolute;
+    right: 92px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    cursor: pointer;
+    color: #999;
+    display: none;
+}
+
+.clear-btn:hover {
+    color: #ff4d4d;
+}
+
+/* File name text */
+.file-name {
+    font-size: 13px;
+    margin-top: 6px;
+    color: #888;
+}
+
+/* Preview box */
+.image-preview {
+    margin-top: 12px;
+    display: none;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 12px;
+    border: 1px solid #dcdcdc;
+    object-fit: cover;
+}
+
+[data-theme="dark"] .image-combo input[type="text"] {
+    background: #1e1e1e;
+    color: #f5f5f5;
+    border-color: #333;
+}
+
+[data-theme="dark"] .upload-btn {
+    background: #fff;
+    color: #000;
+    border-color: #333;
+}
+
+[data-theme="dark"] .image-preview img {
+    border-color: #333;
+}
+
+</style>
+
 <body>
 <div class="page">
 <!-- Header -->
@@ -98,8 +204,15 @@
                     <td><strong>{{ item.name }}</strong></td>
 
                     <td>
-                        <img src="{{ item.picture }}" class="restaurant-img">
+                        {% if item.picture_file %}
+                            <img src="{{ item.picture_file.url }}" class="restaurant-img">
+                        {% elif item.picture %}
+                            <img src="{{ item.picture }}" class="restaurant-img">
+                        {% else %}
+                            <img src="{% static 'images/default-food.png' %}" class="restaurant-img">
+                        {% endif %}
                     </td>
+
 
                     <td>{{ item.description }}</td>
                     <td>₹ {{ item.price }}</td>
@@ -140,9 +253,7 @@
 
             <h3>Add Menu Item</h3>
 
-            <form method="POST"
-                  action="{% url 'update_menu' restaurant.id %}"
-                  class="auth-form">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'update_menu' restaurant.id %}" class="auth-form">
                 {% csrf_token %}
 
                 <label>Item Name</label>
@@ -159,8 +270,32 @@
                     Vegetarian
                 </label>
 
-                <label>Image URL</label>
-                <input type="url" name="picture">
+                <label>Item Image</label>
+
+                    <div class="image-combo">
+                        <input type="text"
+                            id="imageUrl"
+                            name="picture"
+                            placeholder="Image URL (https://...)">
+
+                        <label class="upload-btn">
+                            Upload
+                            <input type="file"
+                                id="imageFile"
+                                name="picture_file"
+                                accept="image/*"
+                                hidden>
+                        </label>
+
+                        <span class="clear-btn" id="clearImage">✕</span>
+                    </div>
+
+                    <p class="file-name" id="fileName"></p>
+
+                    <div class="image-preview" id="imagePreview">
+                        <img id="previewImg">
+                    </div>
+
 
                 <button type="submit" class="btn primary full-width">
                     Add Item
@@ -233,6 +368,127 @@ function openLogoutModal() {
 function confirmLogout() {
     window.location.href = "{% url 'logout' %}";
 }
+
+
+
+const imageUrl = document.getElementById("imageUrl");
+const imageFile = document.getElementById("imageFile");
+const preview = document.getElementById("imagePreview");
+const previewImg = document.getElementById("previewImg");
+const fileName = document.getElementById("fileName");
+
+/* 🔹 Validate image URL */
+function isValidImageUrl(url) {
+    return /^https?:\/\/.*\.(jpg|jpeg|png|webp|gif)$/i.test(url);
+}
+
+/* 🔹 URL input */
+imageUrl.addEventListener("input", () => {
+    const url = imageUrl.value.trim();
+
+    if (url === "") {
+        preview.style.display = "none";
+        imageFile.disabled = false;
+        return;
+    }
+
+    if (!isValidImageUrl(url)) {
+        preview.style.display = "none";
+        return;
+    }
+
+    previewImg.src = url;
+    preview.style.display = "block";
+
+    imageFile.value = "";
+    imageFile.disabled = true;
+    fileName.textContent = "";
+});
+
+/* 🔹 File upload */
+imageFile.addEventListener("change", () => {
+    const file = imageFile.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file");
+        imageFile.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+    fileName.textContent = `Selected file: ${file.name}`;
+});
+
+/* 🔹 Re-enable URL if file cleared */
+imageFile.addEventListener("click", () => {
+    imageUrl.disabled = false;
+});
+
+const clearBtn = document.getElementById("clearImage");
+
+function showClear() {
+    clearBtn.style.display = "block";
+}
+
+function hideClear() {
+    clearBtn.style.display = "none";
+}
+
+clearBtn.addEventListener("click", () => {
+    imageUrl.value = "";
+    imageFile.value = "";
+    imageUrl.disabled = false;
+    imageFile.disabled = false;
+    preview.style.display = "none";
+    fileName.textContent = "";
+    hideClear();
+});
+
+const combo = document.querySelector(".image-combo");
+
+combo.addEventListener("dragover", e => {
+    e.preventDefault();
+    combo.classList.add("dragover");
+});
+
+combo.addEventListener("dragleave", () => {
+    combo.classList.remove("dragover");
+});
+
+combo.addEventListener("drop", e => {
+    e.preventDefault();
+    combo.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+        alert("Only image files allowed");
+        return;
+    }
+
+    imageFile.files = e.dataTransfer.files;
+    imageUrl.value = "";
+    imageUrl.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        previewImg.src = ev.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    fileName.textContent = `Selected file: ${file.name}`;
+    showClear();
+});
 </script>
 
 </body>

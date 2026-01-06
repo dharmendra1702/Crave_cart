@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+import cloudinary
 from django.contrib.auth import get_user_model
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +30,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
-DEBUG = os.environ.get("DEBUG") == "True"
+DEBUG = True
+
 
 
 # ALLOWED_HOSTS = []
@@ -57,8 +59,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'delivery.apps.DeliveryConfig',
-
+    'cloudinary',
+    'cloudinary_storage',
 ]
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": "difeukzrv",
+    "API_KEY": "172552684961211",
+    "API_SECRET": "2u9HMLLoMFJdl-xd1kWKG_xXZAM",
+}
+
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+cloudinary.config(
+    cloud_name="difeukzrv",
+    api_key="172552684961211",
+    api_secret="2u9HMLLoMFJdl-xd1kWKG_xXZAM",
+    secure=True
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -167,12 +185,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 
-
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "crave-cart-82wd.onrender.com"
-]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://crave-cart-82wd.onrender.com"

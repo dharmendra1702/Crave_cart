@@ -1,6 +1,7 @@
 import json
 import random
 import razorpay
+from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_POST
@@ -115,32 +116,24 @@ from django.db import IntegrityError
 
 def add_restaurant(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        cuisine = request.POST.get("cuisine")
-        location = request.POST.get("location")
-
-        try:
-            rating = Decimal(request.POST.get("rating", "0"))
-        except:
-            rating = Decimal("0.0")
-
-        picture_url = request.POST.get("picture", "").strip()
-        picture_file = request.FILES.get("picture_file")
-
         restaurant = Restaurant(
-            name=name,
-            cuisine=cuisine,
-            rating=rating,
-            location=location
+            name=request.POST.get("name"),
+            cuisine=request.POST.get("cuisine"),
+            location=request.POST.get("location"),
+            rating=Decimal(request.POST.get("rating", "0")),
         )
 
-        # ✅ PRIORITY: upload > url
-        if picture_file:
-            restaurant.picture_file = picture_file
-        elif picture_url:
-            if not picture_url.startswith(("http://", "https://")):
-                picture_url = "https://" + picture_url
-            restaurant.picture = picture_url
+        image_url = request.POST.get("picture", "").strip()
+        image_file = request.FILES.get("picture_file")
+
+        # 🔥 Priority: FILE > URL
+        if image_file:
+            restaurant.picture_file = image_file
+            restaurant.picture = None
+        elif image_url:
+            if not image_url.startswith(("http://", "https://")):
+                image_url = "https://" + image_url
+            restaurant.picture = image_url
 
         restaurant.save()
         return redirect("open_show_restaurants")
@@ -170,27 +163,25 @@ def update_restaurant(request, restaurant_id):
         restaurant.name = request.POST.get("name")
         restaurant.cuisine = request.POST.get("cuisine")
         restaurant.location = request.POST.get("location")
+        restaurant.rating = Decimal(request.POST.get("rating", "0"))
 
-        try:
-            restaurant.rating = Decimal(request.POST.get("rating"))
-        except:
-            pass
+        image_url = request.POST.get("picture", "").strip()
+        image_file = request.FILES.get("picture_file")
 
-        picture_url = request.POST.get("picture", "").strip()
-        picture_file = request.FILES.get("picture_file")
-
-        if picture_file:
-            restaurant.picture_file = picture_file
+        if image_file:
+            restaurant.picture_file = image_file
             restaurant.picture = None
-        elif picture_url:
-            if not picture_url.startswith(("http://", "https://")):
-                picture_url = "https://" + picture_url
-            restaurant.picture = picture_url
+        elif image_url:
+            if not image_url.startswith(("http://", "https://")):
+                image_url = "https://" + image_url
+            restaurant.picture = image_url
+            restaurant.picture_file = None
 
         restaurant.save()
         return redirect("open_show_restaurants")
 
     return render(request, "update_restaurant.html", {"restaurant": restaurant})
+
 
 
 def delete_restaurant(request, restaurant_id):
@@ -201,46 +192,60 @@ def delete_restaurant(request, restaurant_id):
 
 
 def open_update_menu(request, restaurant_id):
-    restaurant = Restaurant.objects.get(id = restaurant_id)
-    itemList = restaurant.items.all()
-    #itemList = Item.objects.all()
-    return render(request, 'update_menu.html',{"itemList" : itemList, "restaurant" : restaurant})
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    # ✅ SAME STYLE AS SHOW RESTAURANTS
+    itemList = Item.objects.filter(restaurant_id=restaurant_id)
+
+    return render(request, "update_menu.html", {
+        "restaurant": restaurant,
+        "itemList": itemList
+    })
+
+
+
+from cloudinary.uploader import upload
 
 def update_menu(request, restaurant_id):
-    restaurant = Restaurant.objects.get(id=restaurant_id)
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
 
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
-        vegeterian = request.POST.get('vegeterian') == 'on'
-        picture = request.POST.get('picture')
+    if request.method == "POST":
+        name = request.POST.get("name")
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+        vegeterian = request.POST.get("vegeterian") == "on"
 
-        # duplicate check PER RESTAURANT
-        if Item.objects.filter(restaurant=restaurant, name=name).exists():
-            itemList = restaurant.items.all()
-            return render(request, 'update_menu.html', {
-                "restaurant": restaurant,
-                "itemList": itemList,
-                "error": "Item already exists"
-            })
+        image_url = request.POST.get("picture", "").strip()
+        image_file = request.FILES.get("picture_file")
 
-        Item.objects.create(
+        print("📦 image_file:", image_file)
+
+        item = Item.objects.create(
             restaurant=restaurant,
             name=name,
             description=description,
             price=price,
-            vegeterian=vegeterian,
-            picture=picture,
+            vegeterian=vegeterian
         )
 
-    # reload menu page
-    itemList = restaurant.items.all()
-    return render(request, 'update_menu.html', {
+        if image_file:
+            result = upload(image_file)
+            item.picture_file = result["public_id"]
+            item.picture = None
+        elif image_url:
+            item.picture = image_url
+
+        item.save()
+        print("✅ Item saved:", item.id)
+
+    itemList = Item.objects.filter(restaurant=restaurant)
+    return render(request, "update_menu.html", {
         "restaurant": restaurant,
-        "itemList": itemList,
-        "success": "Item added successfully"
+        "itemList": itemList
     })
+
+
+
 def open_update_item(request, item_id, restaurant_id):
     item = get_object_or_404(Item, id=item_id, restaurant_id=restaurant_id)
     restaurant = get_object_or_404(Restaurant, id=restaurant_id)
@@ -272,16 +277,16 @@ def delete_item(request, item_id, restaurant_id):
 
     return redirect('open_update_menu', restaurant_id=restaurant_id)
 
-
-
 @ensure_csrf_cookie
 def view_menu(request, restaurant_id):
     username = request.session.get("username")
     if not username:
         return redirect("signin")
 
-    restaurant = Restaurant.objects.get(id=restaurant_id)
-    items = restaurant.items.all()
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    # ✅ SAME STYLE AS SHOW RESTAURANTS (NO restaurant.items)
+    itemList = Item.objects.filter(restaurant_id=restaurant_id)
 
     cart = Cart.objects.filter(username=username).first()
 
@@ -292,9 +297,10 @@ def view_menu(request, restaurant_id):
 
     return render(request, "view_menu.html", {
         "restaurant": restaurant,
-        "itemList": items,
+        "itemList": itemList,   # ✅ FIXED
         "cart_quantities": cart_quantities
     })
+
 
 
 
@@ -380,7 +386,8 @@ def view_cart(request):
     item_unit_price = round(product_total / cart_count, 2) if cart_count > 0 else 0
 
     totals = calculate_cart_totals(request, cart)
-    request.session["checkout_data"] = totals
+    request.session["checkout_data"] = serialize_decimals(totals)
+
 
     return render(request, "cart.html", {
         "cart_items": cart_items,
@@ -557,7 +564,8 @@ def checkout(request):
     })
 
     request.session["razorpay_order_id"] = razorpay_order["id"]
-    request.session["checkout_data"] = totals  # ✅ UPDATE HERE
+    request.session["checkout_data"] = serialize_decimals(totals)
+
 
     return render(request, "checkout.html", {
         "customer": user,
@@ -624,39 +632,45 @@ def order_history(request):
 
 from .models import CartItem
 
-FREE_DELIVERY_LIMIT = 99
-DELIVERY_CHARGE = 40
-GST_RATE = 0.05
+FREE_DELIVERY_LIMIT = Decimal("99")
+DELIVERY_CHARGE = Decimal("40")
+GST_RATE = Decimal("0.05")
+
+
 
 def calculate_cart_totals(request, cart):
-    product_total = 0
+    product_total = Decimal("0.00")
 
     for ci in CartItem.objects.filter(cart=cart):
         product_total += ci.item.price * ci.quantity
 
-    # Delivery
-    delivery_fee = 0 if product_total >= FREE_DELIVERY_LIMIT else DELIVERY_CHARGE
+    # Delivery fee
+    delivery_fee = (
+        Decimal("0.00")
+        if product_total >= FREE_DELIVERY_LIMIT
+        else DELIVERY_CHARGE
+    )
 
     # Coupon
     coupon_data = request.session.get("applied_coupon")
-    coupon_discount = 0
+    coupon_discount = Decimal("0.00")
 
     if coupon_data:
-        if product_total < coupon_data["min_order"]:
+        if product_total < Decimal(str(coupon_data["min_order"])):
             request.session.pop("applied_coupon", None)
         else:
-            coupon_discount = coupon_data["discount"]
+            coupon_discount = Decimal(str(coupon_data["discount"]))
 
-    taxable = max(product_total - coupon_discount, 0)
-    gst = round(taxable * GST_RATE, 2)
-    grand_total = round(taxable + gst + delivery_fee, 2)
+    taxable = max(product_total - coupon_discount, Decimal("0.00"))
+    gst = (taxable * GST_RATE).quantize(Decimal("0.01"))
+    grand_total = (taxable + gst + delivery_fee).quantize(Decimal("0.01"))
 
     return {
         "product_total": product_total,
         "delivery_fee": delivery_fee,
         "coupon_discount": coupon_discount,
         "gst": gst,
-        "grand_total": grand_total
+        "grand_total": grand_total,
     }
 
 
@@ -672,3 +686,13 @@ def cancel_order(request, order_id):
 def logout(request):
     request.session.flush()
     return redirect("signin")
+
+
+def serialize_decimals(data: dict):
+    """
+    Convert Decimal values to float for session storage
+    """
+    return {
+        k: float(v) if isinstance(v, Decimal) else v
+        for k, v in data.items()
+    }

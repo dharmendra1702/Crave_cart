@@ -9,7 +9,23 @@
     <link rel="icon" href="{% static 'images/faviconn.png' %}">
     <link rel="stylesheet" href="{% static 'css/show_style.css' %}">
 </head>
+<style>
+    .table-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
 
+    .restaurant-image img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+}
+</style>
 <body>
 <div class="page">
 
@@ -79,29 +95,25 @@
         </div>
 
         <div class="restaurant-list">
-            {% for r in restaurants %}
-            <div class="restaurant-row">
+           {% for r in restaurants %}
+<div class="restaurant-row">
 
-                <!-- IMAGE -->
-                <div class="restaurant-image">
-                    {% if r.picture_file %}
-                        <img src="{{ r.picture_file.url }}">
-                    {% elif r.picture %}
-                        <img src="{{ r.picture }}">
-                    {% else %}
-                        <img src="{% static 'images/default-restaurant.png' %}">
-                    {% endif %}
+    <div class="restaurant-image">
+        {% if r.picture_file %}
+            <img src="{{ r.picture_file.url }}" class="table-img">
+        {% elif r.picture %}
+            <img src="{{ r.picture }}" class="table-img">
+        {% else %}
+            <img src="{% static 'images/default-restaurant.png' %}" class="table-img">
+        {% endif %}
+    </div>
 
-                </div>
-
-
-                <!-- DETAILS -->
-                <div class="restaurant-info">
-                    <h3>{{ r.name }}</h3>
-                    <p class="cuisine">{{ r.cuisine }}</p>
-                    <p class="rating">⭐ {{ r.rating }}</p>
-                    <p class="location">📍 {{ r.location }}</p>
-                </div>
+    <div class="restaurant-info">
+        <h3>{{ r.name }}</h3>
+        <p>{{ r.cuisine }}</p>
+        <p>⭐ {{ r.rating }}</p>
+        <p>📍 {{ r.location }}</p>
+    </div>
 
                 <!-- ACTIONS -->
                 <div class="restaurant-actions">
@@ -111,9 +123,9 @@
                     </a>
 
                     <button class="btn small danger"
-        onclick="openDeleteRestaurantModal('{{ r.id }}')">
-    🗑 Delete
-</button>
+                            onclick="openDeleteRestaurantModal('{{ r.id }}')">
+                        🗑 Delete
+                    </button>
 
                     <a href="{% url 'open_update_menu' r.id %}">
                         <button class="btn small primary">📋 Menu</button>

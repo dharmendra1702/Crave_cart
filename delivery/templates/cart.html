@@ -422,7 +422,13 @@ body[data-theme="dark"] .coupon-modal {
     <div>
         {% for ci in cart_items %}
         <div class="cart-card">
-            <img src="{{ ci.item.picture }}" class="cart-img">
+            {% if ci.item.picture_file %}
+                <img src="{{ ci.item.picture_file.url }}" class="cart-img">
+            {% elif ci.item.picture %}
+                <img src="{{ ci.item.picture }}" class="cart-img">
+            {% else %}
+                <img src="{% static 'images/default-food.png' %}" class="cart-img">
+            {% endif %}
 
             <div class="cart-info">
                 <h4>{{ ci.item.name }}</h4>
