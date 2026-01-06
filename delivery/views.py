@@ -177,8 +177,11 @@ def open_update_restaurant(request, restaurant_id):
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import get_object_or_404, render, redirect
 
-def update_restaurant(request, id):
-    restaurant = get_object_or_404(Restaurant, id=id)
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import get_object_or_404, render, redirect
+
+def update_restaurant(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
 
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -187,14 +190,12 @@ def update_restaurant(request, id):
         rating_raw = request.POST.get("rating", "").strip()
         location = request.POST.get("location", "").strip()
 
-        # REQUIRED FIELDS
         if not name or not cuisine or not location:
             return render(request, "update_restaurant.html", {
                 "restaurant": restaurant,
                 "error": "Name, cuisine and location are required"
             })
 
-        # SAFE RATING
         try:
             rating = Decimal(rating_raw)
         except (InvalidOperation, ValueError):
@@ -203,7 +204,6 @@ def update_restaurant(request, id):
         if rating < 0 or rating > 10:
             rating = Decimal("0.0")
 
-        # SAFE IMAGE URL
         if picture and not picture.startswith(("http://", "https://")):
             picture = None
 
