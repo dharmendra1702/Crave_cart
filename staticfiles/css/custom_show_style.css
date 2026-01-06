@@ -53,6 +53,7 @@ body[data-theme="dark"] {
             rgba(15, 15, 15, 0.40),
             rgba(10, 10, 10, 0.40)),
         url("../images/bg-dark.jpg") center / cover no-repeat;
+    background-attachment: fixed;
 }
 
 /* =====================================================
@@ -2458,10 +2459,3 @@ body[data-theme="dark"] .logout-modal {
     line-height: 1;
 }
 
-/* FOR IMAGE ICONS */
-.icon-btn .icon img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    display: block;
-}
