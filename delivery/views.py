@@ -137,8 +137,18 @@ def add_restaurant(request):
             rating = Decimal("0.0")
 
         # ✅ SAFE URL (Postgres strict)
-        if picture and not picture.startswith(("http://", "https://")):
+        picture = request.POST.get("picture", "").strip()
+
+        if picture:
+            # ✅ allow base64 images
+            if picture.startswith("data:image"):
+                pass
+            # ✅ auto-fix normal URLs
+            elif not picture.lower().startswith(("http://", "https://")):
+                picture = "https://" + picture
+        else:
             picture = None
+
 
         if Restaurant.objects.filter(name=name).exists():
             return render(request, "restaurant_fail.html", {
@@ -204,8 +214,18 @@ def update_restaurant(request, restaurant_id):
         if rating < 0 or rating > 10:
             rating = Decimal("0.0")
 
-        if picture and not picture.startswith(("http://", "https://")):
+        picture = request.POST.get("picture", "").strip()
+
+        if picture:
+            # ✅ allow base64 images
+            if picture.startswith("data:image"):
+                pass
+            # ✅ auto-fix normal URLs
+            elif not picture.lower().startswith(("http://", "https://")):
+                picture = "https://" + picture
+        else:
             picture = None
+
 
         restaurant.name = name
         restaurant.picture = picture
