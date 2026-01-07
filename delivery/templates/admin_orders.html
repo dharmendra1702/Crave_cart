@@ -1,19 +1,19 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Crave Cart | Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Incoming Orders | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
-    <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'css/sign_style.css' %}"> 
+  <link rel="stylesheet" href="{% static 'css/admin_orders.css' %}">
 </head>
 
 <body>
-<div class="page">
-
-<!-- ================= HEADER ================= -->
+    <!-- ================= HEADER ================= -->
 <header class="header">
     <div class="brand">
         <a href="{% url 'home' %}" class="logo-link">
@@ -62,50 +62,49 @@
     </div>
 </header>
 
-<!-- ================= NOTIFICATION ================= -->
-{% if request.session.new_rating %}
-<div class="admin-alert">
-    ⭐ New order rating received
-</div>
-{% endif %}
-{% if show_rating_alert %}
-<div class="admin-alert">
-    ⭐ New order rating received
-</div>
-{% endif %}
+  <h2>📦 Incoming Orders</h2>
 
+  {% if orders %}
+    {% for order in orders %}
+      <div class="admin-order-card">
 
-<!-- ================= MAIN ================= -->
-<main class="content">
-    <div class="auth-card admin-card">
-
-        <h2>Admin Dashboard 👋</h2>
-        <p class="auth-subtitle">
-            Manage restaurants, orders, and platform settings
-        </p>
-
-        <div class="admin-actions">
-
-            <a href="{% url 'open_add_restaurant' %}" class="btn primary full-width">
-                ➕ Add New Restaurant
-            </a>
-
-            <a href="{% url 'open_show_restaurants' %}" class="btn secondary full-width">
-                🏪 Manage Restaurants
-            </a>
-
-            <a href="{% url 'create_coupon' %}" class="btn secondary full-width">
-                🏷️ Manage Coupons
-            </a>
-
-            <a href="{% url 'admin_orders' %}" class="btn secondary full-width">
-                📦 View Orders
-            </a>
-
+        <!-- TOP -->
+        <div class="top">
+          <strong>Order #{{ order.order_number }}</strong>
+          <span>{{ order.created_at|date:"d M Y, h:i A" }}</span>
         </div>
-    </div>
-</main>
 
+        <!-- DETAILS -->
+        <div class="detail">
+          <span class="label">User:</span>
+          <span class="value">{{ order.user.username }}</span>
+        </div>
+
+        <div class="detail">
+          <span class="label">Total:</span>
+          <span class="value amount">₹{{ order.total_amount }}</span>
+        </div>
+
+        <!-- STATUS -->
+        <div class="detail">
+          <span class="label">Status:</span>
+          <span class="status {{ order.status }}">
+            {{ order.get_status_display }}
+          </span>
+        </div>
+
+        <!-- ACTION -->
+        <a class="view-btn" href="{% url 'admin_order_detail' order.id %}">
+          View Details →
+        </a>
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="empty-text">No orders yet 📭</p>
+  {% endif %}
+
+  
 <footer class="footer">
     © 2025 Crave Cart · Admin Panel
 </footer>

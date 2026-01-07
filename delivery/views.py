@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils import timezone
 from .models import Cart, CartItem, Order, OrderItem, User
 from .models import Restaurant
 from .models import Item
@@ -88,14 +89,15 @@ def signin(request):
     return render(request, "signin.html")
 
 def admin_dashboard(request):
-    username = request.session.get("username")
+    show_rating_alert = request.session.get("new_rating", False)
 
-    # safety check
-    if username != "admin":
-        return redirect("signin")
+    # CLEAR after reading
+    if show_rating_alert:
+        del request.session["new_rating"]
 
     return render(request, "admin_dashboard.html", {
-        "username": username
+        "username": request.session.get("username"),
+        "show_rating_alert": show_rating_alert,
     })
 
 def user_dashboard(request):
@@ -547,39 +549,36 @@ def checkout(request):
     if not username:
         return redirect("signin")
 
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return HttpResponse("Razorpay keys not configured", status=500)
+
     user = User.objects.get(username=username)
     cart = Cart.objects.get(username=username)
-    cart_items = CartItem.objects.filter(cart=cart)
 
     totals = calculate_cart_totals(request, cart)
 
-    client = razorpay.Client(
-        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-    )
+    client = razorpay.Client(auth=(
+        settings.RAZORPAY_KEY_ID,
+        settings.RAZORPAY_KEY_SECRET
+    ))
 
     razorpay_order = client.order.create({
-        "amount": int(totals["grand_total"] * 100),  # ✅ SAME VALUE
+        "amount": int(totals["grand_total"] * 100),
         "currency": "INR",
         "payment_capture": 1
     })
 
     request.session["razorpay_order_id"] = razorpay_order["id"]
-    request.session["checkout_data"] = serialize_decimals(totals)
-
 
     return render(request, "checkout.html", {
         "customer": user,
-        "cart_items": cart_items,
+        "cart_items": CartItem.objects.filter(cart=cart),
         **totals,
         "razorpay_key_id": settings.RAZORPAY_KEY_ID,
         "order_id": razorpay_order["id"],
     })
 
 
-
-
-
-@require_POST
 @require_POST
 def payment_success(request):
     username = request.session["username"]
@@ -594,17 +593,38 @@ def payment_success(request):
     totals = calculate_cart_totals(request, cart)
 
     order = Order.objects.create(
-        user=user,
-        total_amount=totals["grand_total"],
-        payment_id=data.get("razorpay_payment_id")
-    )
+    user=user,
+
+    # 🔥 SAVE FULL BREAKDOWN
+    subtotal=float(totals["product_total"]),
+    gst_percent=5,  # or store dynamically
+    gst_amount=float(totals["gst"]),
+    delivery_fee=float(totals["delivery_fee"]),
+
+    total_amount=float(totals["grand_total"]),
+    payment_id=data.get("razorpay_payment_id")
+)
+
 
     for ci in CartItem.objects.filter(cart=cart):
+
+        # ✅ RESOLVE IMAGE CORRECTLY
+        image_url = None
+
+        # Case 1: URL-based image
+        if ci.item.picture:
+            image_url = ci.item.picture
+
+        # Case 2: Cloudinary image
+        elif ci.item.picture_file:
+            image_url = ci.item.picture_file.url
+
         OrderItem.objects.create(
             order=order,
             item_name=ci.item.name,
             price=ci.item.price,
-            quantity=ci.quantity
+            quantity=ci.quantity,
+            item_image=image_url  # 🔥 THIS IS THE FIX
         )
 
     CartItem.objects.filter(cart=cart).delete()
@@ -696,3 +716,167 @@ def serialize_decimals(data: dict):
         k: float(v) if isinstance(v, Decimal) else v
         for k, v in data.items()
     }
+
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from django.http import HttpResponse
+
+def download_invoice(request, order_id):
+    order = Order.objects.get(id=order_id, user__username=request.session["username"])
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="invoice_{order.id}.pdf"'
+
+    doc = SimpleDocTemplate(response)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(f"<b>Crave Cart Invoice</b>", styles["Title"]))
+    elements.append(Paragraph(f"Order ID: {order.id}", styles["Normal"]))
+    elements.append(Paragraph(f"Total: ₹{order.total_amount}", styles["Normal"]))
+
+    for item in order.items.all():
+        elements.append(
+            Paragraph(f"{item.item_name} × {item.quantity} – ₹{item.price}", styles["Normal"])
+        )
+
+    doc.build(elements)
+    return response
+
+
+@require_POST
+def rate_order(request, order_id):
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user__username=request.session["username"]
+    )
+
+    if order.status != "DELIVERED":
+        return redirect("order_history")
+
+    order.rating = int(request.POST.get("rating"))
+    order.review = request.POST.get("review", "")
+    order.save()
+
+    # 🔔 ADMIN NOTIFICATION FLAG
+    request.session["new_rating"] = True
+
+    return redirect("order_history")
+
+
+
+
+def reorder(request, order_id):
+    order = Order.objects.get(id=order_id, user__username=request.session["username"])
+    cart, _ = Cart.objects.get_or_create(username=request.session["username"])
+
+    CartItem.objects.filter(cart=cart).delete()
+
+    for item in order.items.all():
+        menu_item = Item.objects.filter(name=item.item_name).first()
+        if menu_item:
+            CartItem.objects.create(
+                cart=cart,
+                item=menu_item,
+                quantity=item.quantity
+            )
+
+    return redirect("view_cart")
+
+
+from django.http import JsonResponse
+from .models import Order
+
+def order_status_api(request, order_id):
+    order = Order.objects.get(id=order_id)
+    return JsonResponse({
+        "status": order.status,
+        "status_display": order.get_status_display()
+    })
+
+def admin_orders(request):
+    # 🔒 Admin check
+    if request.session.get("username") != "admin":
+        return redirect("signin")
+
+    orders = Order.objects.all().order_by("-created_at")
+
+    return render(request, "admin_orders.html", {
+        "orders": orders
+    })
+
+
+def admin_order_detail(request, order_id):
+    if request.session.get("username") != "admin":
+        return redirect("signin")
+
+    order = get_object_or_404(Order, id=order_id)
+
+    return render(request, "admin_order_detail.html", {
+        "order": order
+    })
+
+
+@require_POST
+def admin_update_order_status(request, order_id):
+    # 🔐 Admin check
+    if request.session.get("username") != "admin":
+        return redirect("signin")
+
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        if new_status in dict(Order.STATUS_CHOICES):
+            order.status = new_status
+            order.save()
+
+    return redirect("admin_order_detail", order_id=order.id)
+
+@require_POST
+def update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        order.status = new_status
+
+        # ✅ SET DELIVERY TIME ONLY ONCE
+        if new_status == "DELIVERED" and order.delivered_at is None:
+            order.delivered_at = timezone.now()
+
+        order.save()
+        return redirect("admin_order_detail", order_id=order.id)
+
+
+
+from django.db.models import Avg, Count
+
+def admin_ratings_dashboard(request):
+    if request.session.get("username") != "admin":
+        return redirect("signin")
+
+    data = (
+        Order.objects
+        .filter(status="DELIVERED", rating__isnull=False)
+        .values("items__item_name")
+        .annotate(
+            avg_rating=Avg("rating"),
+            total_reviews=Count("rating")
+        )
+    )
+
+    return render(request, "admin_ratings.html", {
+        "data": data
+    })
+
+def order_history(request):
+    user = User.objects.get(username=request.session["username"])
+
+    orders = Order.objects.filter(user=user).order_by("-created_at")
+
+    return render(request, "order_history.html", {
+        "orders": orders
+    })

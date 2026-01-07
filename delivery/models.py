@@ -1,10 +1,12 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
+import random
+from django.utils.timezone import localtime
 
 class User(models.Model):
     username = models.CharField(max_length=150, unique=True)
     first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30) 
     password = models.CharField(max_length=128)
     email = models.EmailField(unique=True)
     mobile = models.CharField(max_length=15)
@@ -21,16 +23,10 @@ class Restaurant(models.Model):
     location = models.CharField(max_length=255)
 
     picture = models.URLField(blank=True, null=True)
-    picture_file = CloudinaryField(
-        "restaurant_image",
-        blank=True,
-        null=True
-    )
+    picture_file = CloudinaryField("restaurant_image", blank=True, null=True)
 
     def __str__(self):
         return self.name
-
-
 
 
 class Item(models.Model):
@@ -41,11 +37,7 @@ class Item(models.Model):
     vegeterian = models.BooleanField(default=False)
 
     picture = models.URLField(blank=True, null=True)
-    picture_file = CloudinaryField(
-        "menu_image",
-        blank=True,
-        null=True
-    )
+    picture_file = CloudinaryField("menu_image", blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -58,14 +50,14 @@ class Cart(models.Model):
         return f"Cart ({self.username})"
 
 
-
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart,on_delete=models.CASCADE,related_name="items")
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.item.name} x {self.quantity}"
+
 
 class Coupon(models.Model):
     code = models.CharField(max_length=20, unique=True)
@@ -77,32 +69,76 @@ class Coupon(models.Model):
     min_order_amount = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
-    # 🔒 NEW
     used_by = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
         return self.code
 
+
+from django.utils import timezone
+
+from django.db import models
+from django.utils import timezone
+from django.utils.timezone import localtime
+import random
+
 class Order(models.Model):
-    STATUS_CHOICES = (
+    STATUS_CHOICES = [
         ("PLACED", "Placed"),
-        ("CANCELLED", "Cancelled"),
+        ("PREPARING", "Preparing"),
+        ("OUT_FOR_DELIVERY", "Out for Delivery"),
         ("DELIVERED", "Delivered"),
-    )
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    order_number = models.CharField(max_length=11, unique=True, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    total_amount = models.FloatField()
+
+    subtotal = models.FloatField(default=0)
+    gst_percent = models.PositiveIntegerField(default=5)
+    gst_amount = models.FloatField(default=0)
+    delivery_fee = models.FloatField(default=0)
+    total_amount = models.FloatField(default=0)
+
     payment_id = models.CharField(max_length=200)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PLACED")
+
     created_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    review = models.TextField(blank=True)
+
+    @property
+    def delivery_minutes(self):
+        if self.delivered_at:
+            delta = localtime(self.delivered_at) - localtime(self.created_at)
+            return max(1, int(delta.total_seconds() // 60))
+        return None
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = str(random.randint(10**10, 10**11 - 1))
+
+        if self.status == "DELIVERED" and self.delivered_at is None:
+            self.delivered_at = timezone.now()
+
+        super().save(*args, **kwargs)
 
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
-    item_name = models.CharField(max_length=200)
-    price = models.FloatField()
+    order = models.ForeignKey(
+        Order,
+        related_name="items",
+        on_delete=models.CASCADE
+    )
+    item_name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.IntegerField()
+
+    # 🖼 Snapshot image
+    item_image = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.item_name} x {self.quantity}"
-    

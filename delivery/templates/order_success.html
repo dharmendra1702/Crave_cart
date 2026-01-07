@@ -1,20 +1,149 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Order Success | Crave Cart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+
+    <style>
+        /* ===== BACKGROUND ===== */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        }
+
+        /* ===== CARD ===== */
+        .success-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 48px 42px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 520px;
+            text-align: center;
+            box-shadow:
+                0 40px 80px rgba(0, 0, 0, 0.18),
+                inset 0 0 0 1px rgba(0,0,0,0.06);
+            animation: popIn 0.6s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== CHECK ICON ===== */
+        .success-icon {
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 46px;
+            color: white;
+            box-shadow: 0 18px 35px rgba(34, 197, 94, 0.45);
+        }
+
+        /* ===== TEXT ===== */
+        .success-container h2 {
+            font-size: 30px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .success-container p {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .success-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 26px;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 14px 26px rgba(34,197,94,0.45);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 36px rgba(34,197,94,0.55);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #22c55e;
+            color: #16a34a;
+        }
+
+        .btn-outline:hover {
+            background: #22c55e;
+            color: white;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 480px) {
+            .success-container {
+                padding: 36px 26px;
+            }
+
+            .success-container h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="checkout-container">
-    <div class="success-box">
-        ✅ Order placed successfully!
-    </div>
+<div class="success-container">
+    <div class="success-icon">✔</div>
 
-    <a href="{% url 'home' %}" class="checkout-btn">
-        Go to Home
-    </a>
+    <h2>Order Placed Successfully!</h2>
+    <p>Your food is being prepared 🍽️ <br>
+       Sit back and relax — we’ll take care of the rest.</p>
+
+    <div class="success-actions">
+        <a href="{% url 'order_history' %}" class="btn btn-outline">
+            View Orders
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-primary">
+            Go to Home
+        </a>
+    </div>
 </div>
 
 </body>

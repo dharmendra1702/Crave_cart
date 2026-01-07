@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Order {{ order.order_number }} | Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+<style>
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+body[data-theme="dark"] .card {
+  background: #0f172a; /* dark navy */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-id {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+}
+
+.PLACED { background:#2563eb; }
+.PREPARING { background:#f59e0b; }
+.OUT_FOR_DELIVERY { background:#10b981; }
+.DELIVERED { background:#22c55e; }
+.CANCELLED { background:#ef4444; }
+
+.section {
+  margin-top: 26px;
+}
+
+.items {
+  margin-top: 14px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-row img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.item-name {
+  font-weight: 600;
+}
+
+.controls {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+}
+
+button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: #0ea5e9;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.meta {
+  margin-top: 10px;
+  color: #000;
+  font-size: 14px;
+}
+
+
+body[data-theme="dark"] .meta {
+  margin-top: 10px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+
+
+/* ================= PROFILE DROPDOWN FIX ================= */
+
+/* Header must be above page content */
+header.header {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Profile menu container */
+.profile-menu {
+  position: relative;
+}
+
+/* Dropdown panel */
+.profile-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+
+  min-width: 240px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+
+  z-index: 10000;
+  display: none;
+}
+
+/* Show dropdown */
+.profile-dropdown.show {
+  display: block;
+}
+
+/* Dropdown items */
+.profile-dropdown .dropdown-item {
+  display: block;
+  padding: 12px 16px;
+  color: #1f2937;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+/* Divider */
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 8px 0;
+}
+
+
+
+
+</style>
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+    <div class="brand">
+        <a href="{% url 'home' %}" class="logo-link">
+            <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+        </a>
+    </div>
+
+    <div class="header-actions">
+
+        <!-- HELP -->
+        <button class="icon-btn" title="Help">❓</button>
+
+        <!-- THEME TOGGLE -->
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
+
+        <!-- PROFILE -->
+        <div class="profile-menu">
+            <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+                <img src="{% static 'images/profile.png' %}" alt="Profile">
+            </button>
+
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-header">
+                    <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                    <div>
+                        <strong>{{ username|capfirst }}</strong>
+                        <small>Administrator</small>
+                    </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <a href="{% url 'open_add_restaurant' %}" class="dropdown-item">🏪 Add Restaurant</a>
+                <a href="{% url 'open_show_restaurants' %}" class="dropdown-item">📋 Manage Restaurants</a>
+                <a href="{% url 'create_coupon' %}" class="dropdown-item">🏷️ Coupons</a>
+                <a href="{% url 'admin_orders' %}" class="dropdown-item">📦 Orders</a>
+
+                <div class="dropdown-divider"></div>
+
+                <a href="javascript:void(0)" class="dropdown-item logout"
+                   onclick="openLogoutModal()">🚪 Log Out</a>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="container">
+  <div class="card">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="order-id">
+        Order #{{ order.order_number }}
+      </div>
+
+      <span class="status-badge {{ order.status }}">
+        {{ order.get_status_display }}
+      </span>
+    </div>
+
+    <div class="meta">
+      <b>User:</b> {{ order.user.username }} <br>
+      <b>Total:</b> ₹{{ order.total_amount }}
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section">
+      <h3>Ordered Items</h3>
+
+      <div class="items">
+        {% for item in order.items.all %}
+        <div class="item-row">
+          <img src="{{ item.item_image }}"
+               onerror="this.src='{% static 'images/food-placeholder.png' %}'">
+          <div>
+            <div class="item-name">{{ item.item_name }}</div>
+            <div>Qty: {{ item.quantity }} · ₹{{ item.price }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- STATUS UPDATE -->
+    <div class="section">
+      <h3>Update Order Status</h3>
+
+      <form method="post"
+            action="{% url 'admin_update_order_status' order.id %}">
+        {% csrf_token %}
+
+        <div class="controls">
+          <select name="status">
+            {% for key,label in order.STATUS_CHOICES %}
+              <option value="{{ key }}"
+                {% if order.status == key %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+
+          <button type="submit">Update Status</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+
+<footer class="footer">
+    © 2025 Crave Cart · Admin Panel
+</footer>
+
+</div>
+
+<!-- ================= LOGOUT MODAL ================= -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Me Out
+        </button>
+    </div>
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+
+<script>
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", () => {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+</script>
+
+</body>
+</html>

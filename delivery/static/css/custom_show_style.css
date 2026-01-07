@@ -47,14 +47,6 @@ body {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-body[data-theme="dark"] {
-    background:
-        radial-gradient(circle at top,
-            rgba(15, 15, 15, 0.40),
-            rgba(10, 10, 10, 0.40)),
-        url("../images/bg-dark.jpg") center / cover no-repeat;
-    background-attachment: fixed;
-}
 
 /* =====================================================
    PAGE LAYOUT
@@ -132,6 +124,7 @@ body[data-theme="dark"] {
 
 body[data-theme="dark"] .icon-btn {
     background: rgba(30, 30, 30, 0.6);
+
 }
 
 /* =====================================================
@@ -413,26 +406,7 @@ body[data-theme="dark"] {
    BACKGROUND (SAME AS ADMIN)
 ======================= */
 
-body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at top,
-            rgba(255, 255, 255, 0.35),
-            rgba(255, 255, 255, 0.35)),
-        url("../images/bg-light.jpg") center / cover no-repeat;
-    background-attachment: fixed;
-    color: var(--text);
-    transition: background 0.3s ease, color 0.3s ease;
-}
 
-body[data-theme="dark"] {
-    background:
-        radial-gradient(circle at top,
-            rgba(15, 15, 15, 0.45),
-            rgba(10, 10, 10, 0.45)),
-        url("../images/bg-dark.jpg") center / cover no-repeat;
-    background-attachment: fixed;
-}
 
 /* =======================
    PAGE LAYOUT
@@ -708,24 +682,8 @@ body[data-theme="dark"] {
    BACKGROUNDS
 ======================= */
 
-body {
-    background:
-        radial-gradient(circle at top,
-            rgba(255, 255, 255, 0.40),
-            rgba(255, 255, 255, 0.40)),
-        url("../images/bg-light.jpg") center / cover no-repeat;
-    background-attachment: fixed;
-    color: var(--text);
-    transition: background 0.3s ease, color 0.3s ease;
-}
 
-body[data-theme="dark"] {
-    background:
-        radial-gradient(circle at top,
-            rgba(15, 15, 15, 0.40),
-            rgba(10, 10, 10, 0.40)),
-        url("../images/bg-dark.jpg") center / cover no-repeat;
-}
+
 
 /* =======================
    LAYOUT
@@ -2198,9 +2156,6 @@ body[data-theme="dark"] .qty-box {
     border: 1px solid #1e293b;
 }
 
-body[data-theme="dark"] .qty-btn {
-    color: #000000;
-}
 
 /* ========================= */
 /* ADD BUTTON – LIGHT THEME */
@@ -2247,17 +2202,6 @@ body[data-theme="dark"] .qty-box .qty-count {
 }
 
 
-body {
-    background:
-        radial-gradient(circle at top,
-            rgba(255,255,255,0.30),
-            rgba(255,255,255,0.30)
-        ),
-        url("../images/bg-light.jpg") center / cover no-repeat;
-    background-attachment: fixed;
-    color: var(--text);
-    transition: background 0.3s ease, color 0.3s ease;
-}
 
 body[data-theme="dark"] {
     background:

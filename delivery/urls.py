@@ -6,6 +6,7 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path('', views.index),
     path('open_signin', views.open_signin, name='open_signin'),
@@ -40,6 +41,17 @@ urlpatterns = [
     path("payment-success/", views.payment_success, name="payment_success"),
     path("orders/", views.order_history, name="order_history"),
     path("logout", views.logout, name="logout"),
+    path("invoice/<int:order_id>/", views.download_invoice, name="download_invoice"),
+    path("reorder/<int:order_id>/", views.reorder, name="reorder"),
+    path("order-status/<int:order_id>/", views.order_status_api, name="order_status_api"),
+    path("admin-panel/orders/", views.admin_orders, name="admin_orders"),
+    path("admin-panel/orders/<int:order_id>/", views.admin_order_detail, name="admin_order_detail"),
+    path("admin-panel/orders/<int:order_id>/update/", views.admin_update_order_status, name="admin_update_order_status"),
+    path("admin-panel/ratings/", views.admin_ratings_dashboard, name="admin_ratings"),
+    path("orders/<int:order_id>/rate/", views.rate_order, name="rate_order"),
+
+
+
 
 
 ]

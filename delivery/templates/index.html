@@ -12,6 +12,13 @@
     <!-- Main CSS -->
     <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    .btn.primary {
+    background: var(--primary);
+    color: var(--bg);
+    }
+</style>
 </head>
 
 <body>
@@ -72,7 +79,7 @@
 
         <div class="actions">
             <a href="{% url 'open_signup' %}" class="btn primary">Sign Up</a>
-            <a href="{% url 'open_signin' %}" class="btn secondary">Sign In</a>
+            <a href="{% url 'open_signin' %}" class="btn primary">Sign In</a>
         </div>
     </main>
 
