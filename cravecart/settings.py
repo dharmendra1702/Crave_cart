@@ -33,7 +33,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+
 
 
 
@@ -67,19 +68,18 @@ INSTALLED_APPS = [
 ]
 
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": "difeukzrv",
-    "API_KEY": "172552684961211",
-    "API_SECRET": "2u9HMLLoMFJdl-xd1kWKG_xXZAM",
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
 }
 
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 cloudinary.config(
-    cloud_name="difeukzrv",
-    api_key="172552684961211",
-    api_secret="2u9HMLLoMFJdl-xd1kWKG_xXZAM",
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
     secure=True
 )
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
