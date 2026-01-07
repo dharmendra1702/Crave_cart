@@ -310,11 +310,6 @@ body[data-theme="dark"] .auth-card {
     transition: transform 0.2s ease;
 }
 
-.btn.primary {
-    background: var(--primary);
-    color: var(--bg);
-}
-
 .btn.secondary {
     border: 1px solid var(--border);
     color: var(--text);
@@ -592,8 +587,9 @@ body[data-theme="dark"] .auth-form input {
 }
 
 .btn.primary {
-    background: var(--primary);
+    border: 1px solid var(--border);
     color: var(--bg);
+    color: var(--text);
 }
 
 .btn:hover {
@@ -729,6 +725,7 @@ body[data-theme="dark"] {
             rgba(10,10,10,0.40)
         ),
         url("../images/bg-dark.jpg") center / cover no-repeat;
+    background-attachment: fixed;
 }
 
 /* =======================
@@ -859,15 +856,6 @@ body[data-theme="dark"] .logo-link:hover .logo {
     transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.btn.primary {
-    background: var(--primary);
-    color: var(--bg);
-}
-
-.btn.secondary {
-    border: 1px solid var(--border);
-    color: var(--text);
-}
 
 .btn:hover {
     transform: translateY(-2px);

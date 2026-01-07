@@ -346,6 +346,28 @@ body[data-theme="dark"] .coupon-modal {
     color: var(--text-muted);
     margin-bottom: 20px;
 }
+
+/* ================= BUTTON SPACING FIX ================= */
+
+.customer-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Force spacing even if buttons are absolutely styled elsewhere */
+.customer-actions a {
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
+/* Actual visible gap */
+.customer-actions a + a {
+    margin-top: 24px !important;
+}
+
 </style>
 
 <body>
@@ -413,7 +435,7 @@ body[data-theme="dark"] .coupon-modal {
 
                     <!-- CUSTOMER MENU -->
                     <a href="#" class="dropdown-item">👤 My Profile</a>
-                    <a href="#" class="dropdown-item">🛒 Order History</a>
+                    <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
 
                     <div class="dropdown-divider"></div>
 
@@ -438,10 +460,16 @@ body[data-theme="dark"] .coupon-modal {
                 Explore restaurants and order your favorite food
             </p>
 
-            <a href="{% url 'open_customer_show_restaurants' %}"
-                class="btn primary">
-                🍽 Show Restaurants
-            </a>
+                <div class="customer-actions">
+                    <a href="{% url 'open_customer_show_restaurants' %}" class="btn primary">
+                        🍽 Show Restaurants
+                    </a>
+
+                    <a href="{% url 'order_history' %}" class="btn primary">
+                        🛒 Order History
+                    </a>
+                </div>
+
 
         </div>
     </main>
@@ -468,7 +496,7 @@ body[data-theme="dark"] .coupon-modal {
 
 <script>
 
-    const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
+const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
 const CART_DARK  = "{% static 'images/light-cart.png' %}";
 
 function toggleProfileMenu(event) {

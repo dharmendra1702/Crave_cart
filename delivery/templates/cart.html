@@ -53,7 +53,6 @@ body[data-theme="dark"] {
             gap: 20px;
             padding: 20px;
             border-radius: 20px;
-            background: var(--bg-card);
             backdrop-filter: blur(12px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             transition: transform 0.3s ease;
@@ -133,6 +132,7 @@ body[data-theme="dark"] {
             color: #f87171;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 700;
         }
 
         .cart-price {
@@ -402,7 +402,7 @@ body[data-theme="dark"] .coupon-modal {
                 <div class="dropdown-divider"></div>
 
                 <a href="#" class="dropdown-item">👤 My Profile</a>
-                <a href="#" class="dropdown-item">🛒 Order History</a>
+                <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
                 <div class="dropdown-divider"></div>
 
                 <a href="javascript:void(0)"

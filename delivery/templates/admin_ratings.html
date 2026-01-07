@@ -1,17 +1,9 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Crave Cart | Admin Dashboard</title>
-
-    <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
-    <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ratings Analytics</title>
 </head>
-
 <body>
-<div class="page">
 
 <!-- ================= HEADER ================= -->
 <header class="header">
@@ -61,50 +53,24 @@
         </div>
     </div>
 </header>
+<h2>📊 Restaurant Ratings</h2>
 
-<!-- ================= NOTIFICATION ================= -->
-{% if request.session.new_rating %}
-<div class="admin-alert">
-    ⭐ New order rating received
-</div>
-{% endif %}
-{% if show_rating_alert %}
-<div class="admin-alert">
-    ⭐ New order rating received
-</div>
-{% endif %}
+<table border="1" cellpadding="10">
+  <tr>
+    <th>Item</th>
+    <th>Avg Rating</th>
+    <th>Total Reviews</th>
+  </tr>
 
+  {% for row in data %}
+  <tr>
+    <td>{{ row.items__item_name }}</td>
+    <td>⭐ {{ row.avg_rating|floatformat:1 }}</td>
+    <td>{{ row.total_reviews }}</td>
+  </tr>
+  {% endfor %}
+</table>
 
-<!-- ================= MAIN ================= -->
-<main class="content">
-    <div class="auth-card admin-card">
-
-        <h2>Admin Dashboard 👋</h2>
-        <p class="auth-subtitle">
-            Manage restaurants, orders, and platform settings
-        </p>
-
-        <div class="admin-actions">
-
-            <a href="{% url 'open_add_restaurant' %}" class="btn primary full-width">
-                ➕ Add New Restaurant
-            </a>
-
-            <a href="{% url 'open_show_restaurants' %}" class="btn secondary full-width">
-                🏪 Manage Restaurants
-            </a>
-
-            <a href="{% url 'create_coupon' %}" class="btn secondary full-width">
-                🏷️ Manage Coupons
-            </a>
-
-            <a href="{% url 'admin_orders' %}" class="btn secondary full-width">
-                📦 View Orders
-            </a>
-
-        </div>
-    </div>
-</main>
 
 <footer class="footer">
     © 2025 Crave Cart · Admin Panel
@@ -145,6 +111,5 @@ function confirmLogout() {
     window.location.href = "{% url 'logout' %}";
 }
 </script>
-
 </body>
 </html>

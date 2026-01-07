@@ -1,31 +1,372 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Order History | Crave Cart</title>
-    <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+<meta charset="UTF-8">
+<title>Order History | Crave Cart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+<link rel="stylesheet" href="{% static 'css/order_history.css' %}">
 </head>
+
 <body>
 
-<div class="checkout-container">
-    <h2>Your Orders</h2>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+
+        <!-- RIGHT ACTIONS -->
+        <div class="header-actions">
+
+            <!-- HELP -->
+            <button class="icon-btn" title="Help">
+                <span class="icon">❓</span>
+            </button>
+
+            <!-- THEME TOGGLE -->
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+            <span id="themeIcon", class = "icon">🌙</span>
+        </button>
+
+
+    <!-- CART (BETWEEN THEME & PROFILE) -->
+    {% if request.session.username %}
+        <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
+            <span class="cart-icon-box">
+                <img
+                    id="cartIcon"
+                    alt="Cart"
+                >
+                {% if cart_count and cart_count > 0 %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </span>
+        </a>
+    {% endif %}
+
+
+
+            <!-- PROFILE -->
+            <div class="profile-menu">
+                <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+                    <span class="icon">
+                    <img src="{% static 'images/profile.png' %}" alt="Profile">
+                    </span>
+                </button>
+
+                <!-- DROPDOWN -->
+                <div class="profile-dropdown" id="profileDropdown">
+
+                    <!-- USER INFO -->
+                    <div class="profile-header">
+                        <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                        <div>
+                            <strong>{{ username|capfirst }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <!-- CUSTOMER MENU -->
+                    <a href="#" class="dropdown-item">👤 My Profile</a>
+                    <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
+
+                    <div class="dropdown-divider"></div>
+
+                    <a href="javascript:void(0)"
+                        class="dropdown-item logout"
+                        onclick="openLogoutModal()">
+                            🚪 Log Out
+                    </a>
+
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+<div class="orders-wrapper">
+    <h2 style="text-align:center;font-size:32px;margin-bottom:26px;">
+        Your Orders
+    </h2>
 
     {% for order in orders %}
-        <div class="cart-item">
-            <strong>Order #{{ order.id }}</strong><br>
-            Total: ₹{{ order.total_amount }}<br>
-            Date: {{ order.created_at|date:"d M Y, h:i A" }}
+    <div class="order-card">
 
-            <ul>
-                {% for item in order.items.all %}
-                    <li>{{ item.item_name }} × {{ item.quantity }}</li>
-                {% endfor %}
-            </ul>
+  <!-- HEADER -->
+  <div class="order-header">
+    <div>
+      <div class="order-id">Order #{{ order.order_number }}</div>
+      <div class="order-date">
+        {{ order.created_at|date:"d M Y, h:i A" }}
+      </div>
+    </div>
+
+    <span class="order-status {{ order.status }}" id="status-{{ order.id }}">
+        {{ order.get_status_display }}
+    </span>
+
+  </div>
+
+  <!-- BODY -->
+  <div class="order-body">
+
+    <!-- LEFT -->
+    <div class="order-left">
+      {% with first=order.items.first %}
+      <img src="{{ first.item_image }}"
+           onerror="this.src='{% static 'images/food-placeholder.png' %}'">
+
+      <div class="order-info">
+        <strong>{{ first.item_name }}</strong>
+        <div class="qty-price">
+          Qty {{ first.quantity }} * ₹{{ first.price }}
         </div>
-    {% empty %}
-        <p>No orders yet.</p>
+        <div class="price-breakdown">
+
+  <div class="row">
+    <span>Item total</span>
+    <span>₹{{ order.subtotal }}</span>
+  </div>
+
+  <div class="row">
+    <span>GST ({{ order.gst_percent }}%)</span>
+    <span>₹{{ order.gst_amount }}</span>
+  </div>
+
+  <div class="row">
+    <span>Delivery fee</span>
+    <span>₹{{ order.delivery_fee }}</span>
+  </div>
+
+  <div class="row total">
+    <span>Total paid</span>
+    <span>₹{{ order.total_amount }}</span>
+  </div>
+
+</div>
+
+
+
+        {% if order.items.count > 1 %}
+        <div class="more-items" onclick="toggleItems('{{ order.id }}')">
+          +{{ order.items.count|add:"-1" }} more items
+        </div>
+        {% endif %}
+      </div>
+      {% endwith %}
+    </div>
+
+    <!-- RIGHT -->
+    <div class="order-right">
+      <button class="track-btn" onclick="toggleTrack('{{ order.id }}')">
+        🚚 Track Order
+        </button>
+    </div>
+  </div>
+
+  <!-- HIDDEN ITEMS -->
+  <div class="extra-items" id="items-{{ order.id }}">
+    {% for item in order.items.all|slice:"1:" %}
+    <div class="extra-row">
+      {{ item.item_name }} × {{ item.quantity }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- TRACK PANEL -->
+  <div class="track-panel" id="track-{{ order.id }}">
+    <div class="track-steps">
+      <div class="step active">Placed</div>
+      <div class="step {% if order.status != 'PLACED' %}active{% endif %}">Preparing</div>
+      <div class="step {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}active{% endif %}">On the way</div>
+      <div class="step {% if order.status == 'DELIVERED' %}active{% endif %}">Delivered</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="order-footer">
+    {% if order.status == "DELIVERED" %}
+  <div class="eta delivered">
+     ✅ Delivered in {{ order.delivery_minutes }} minutes
+     <div class="delivery-date">
+        Delivered on <span>{{ order.delivered_at|date:"d M Y, h:i A" }}</span>
+     </div>
+  </div>
+{% else %}
+  <div class="eta">
+    ⏱ Estimated delivery: <b>30–40 mins</b>
+  </div>
+{% endif %}
+
+
+    <div class="footer-right">
+      <a href="{% url 'download_invoice' order.id %}" class="invoice-btn">Invoice</a>
+      <a href="{% url 'reorder' order.id %}" class="reorder-btn">Reorder</a>
+    </div>
+  </div>
+
+  <!-- RATING -->
+  {% if order.status == "DELIVERED" and not order.rating %}
+<div class="rating-box">
+  <form method="post" action="{% url 'rate_order' order.id %}">
+    {% csrf_token %}
+
+    <div class="stars">
+      {% for i in "54321" %}
+        <input type="radio" id="star{{ i }}-{{ order.id }}" name="rating" value="{{ i }}" required>
+        <label for="star{{ i }}-{{ order.id }}">★</label>
+      {% endfor %}
+    </div>
+
+    <textarea name="review" placeholder="Write a review (optional)…"></textarea>
+    <button class="rate-btn">Submit Review</button>
+  </form>
+</div>
+{% endif %}
+
+
+{% if order.rating %}
+<div class="rated-box">
+  ⭐ Rated: {{ order.rating }}/5 <br>
+  <em>{{ order.review }}</em>
+</div>
+{% endif %}
+
+
+</div>
+
+    <script>
+    startLiveTracking({{ order.id }});
+    </script>
+
     {% endfor %}
 </div>
+
+<!-- FOOTER -->
+    <footer class="footer">
+        © 2025 Crave Cart
+    </footer>
+
+</div>
+<!-- LOGOUT MODAL -->
+<div class="logout-overlay" id="logoutOverlay">
+    <div class="logout-modal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <button class="btn primary full-width" onclick="confirmLogout()">
+            Yes, Log Me Out
+        </button>
+    </div>
+</div>
+
+<script src="{% static 'js/theme.js' %}"></script>
+<script>
+const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
+const CART_DARK  = "{% static 'images/light-cart.png' %}";
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) dropdown.classList.remove("show");
+});
+
+function openLogoutModal() {
+    document.getElementById("logoutOverlay").classList.add("show");
+}
+
+function confirmLogout() {
+    window.location.href = "{% url 'logout' %}";
+}
+
+function addItem(btn) {
+    const wrapper = btn.parentElement;
+    btn.classList.add("hidden");
+    wrapper.querySelector(".qty-box").classList.remove("hidden");
+}
+
+
+
+function addItem(btn, qty = 1) {
+    const wrapper = btn.closest(".qty-wrapper");
+    btn.classList.add("hidden");
+    const box = wrapper.querySelector(".qty-box");
+    box.classList.remove("hidden");
+    box.querySelector(".qty-count").textContent = qty;
+}
+
+function toggleTrack(id) {
+  const panel = document.getElementById("track-" + id);
+  document.querySelectorAll(".track-panel").forEach(p => {
+    if (p !== panel) p.style.display = "none";
+  });
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+}
+
+function toggleItems(id) {
+  const el = document.getElementById("items-" + id);
+  el.style.display = el.style.display === "block" ? "none" : "block";
+}
+
+/* ---------- TRACK TOGGLE (SMOOTH) ---------- */
+function toggleTrack(orderId) {
+  const panel = document.getElementById("track-" + orderId);
+
+  if (!panel) return;
+
+  document.querySelectorAll(".track-panel").forEach(p => {
+    if (p !== panel) p.classList.remove("open");
+  });
+
+  panel.classList.toggle("open");
+}
+
+/* ---------- EXTRA ITEMS ---------- */
+function toggleItems(orderId) {
+  const el = document.getElementById("items-" + orderId);
+  el.classList.toggle("open");
+}
+
+/* ---------- LIVE ORDER STATUS ---------- */
+function startLiveTracking(orderId) {
+  setInterval(() => {
+    fetch(`/order-status/${orderId}/`)
+      .then(res => res.json())
+      .then(data => {
+        const badge = document.getElementById(`status-${orderId}`);
+        if (!badge) return;
+
+        badge.textContent = data.status_display;
+        badge.className = `order-status ${data.status}`;
+
+        updateSteps(orderId, data.status);
+      });
+  }, 5000);
+}
+
+/* ---------- TRACK STEPS ---------- */
+function updateSteps(orderId, status) {
+  const steps = document.querySelectorAll(`#track-${orderId} .step`);
+  const orderFlow = ["PLACED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
+
+  steps.forEach((step, index) => {
+    step.classList.toggle(
+      "active",
+      orderFlow.indexOf(status) >= index
+    );
+  });
+}
+</script>
 
 </body>
 </html>

@@ -238,7 +238,7 @@ body[data-theme="dark"] {
                 <div class="dropdown-divider"></div>
 
                 <a href="#" class="dropdown-item">👤 My Profile</a>
-                <a href="#" class="dropdown-item">🛒 Order History</a>
+                <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
                 <div class="dropdown-divider"></div>
 
                 <a href="javascript:void(0)"
@@ -327,6 +327,25 @@ function confirmLogout() {
 }
 
 
+/* ================= CSRF HELPER ================= */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/* ================= RAZORPAY ================= */
 var options = {
     key: "{{ razorpay_key_id }}",
     order_id: "{{ order_id }}",
@@ -334,32 +353,28 @@ var options = {
     name: "Crave Cart",
     description: "Order Payment",
 
-    method: {
-        upi: true,
-        card: true,
-        netbanking: true,
-        wallet: true
-    },
-
     handler: function (response) {
         fetch("{% url 'payment_success' %}", {
             method: "POST",
             headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
+                "X-CSRFToken": getCookie("csrftoken"),
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(response)
-        }).then(() => {
+        })
+        .then(() => {
             window.location.href = "{% url 'order_history' %}";
         });
     }
 };
 
 var rzp = new Razorpay(options);
-document.getElementById("rzp-button").onclick = function(e){
+document.getElementById("rzp-button").onclick = function (e) {
     rzp.open();
     e.preventDefault();
-}
+};
+
+
 </script>
 
 </body>
