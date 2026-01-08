@@ -316,26 +316,35 @@ def open_customer_show_restaurants(request):
     restaurants = Restaurant.objects.all()
 
     cart = Cart.objects.filter(username=username).first()
-    cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart)) if cart else 0
+    cart_count = (
+        sum(ci.quantity for ci in CartItem.objects.filter(cart=cart))
+        if cart else 0
+    )
 
     return render(
         request,
         "customer_show_restaurants.html",
         {
-            "restaurants": restaurants
+            "restaurants": restaurants,
+            "cart_count": cart_count,
         }
     )
 
 
 
 
+
+@require_POST
 @require_POST
 def add_to_cart(request, item_id):
-    username = request.session["username"]
+    username = request.session.get("username")
+    if not username:
+        return JsonResponse({"error": "Login required"}, status=401)
+
     request.session.pop("applied_coupon", None)
 
     cart, _ = Cart.objects.get_or_create(username=username)
-    item = Item.objects.get(id=item_id)
+    item = get_object_or_404(Item, id=item_id)
     ci, created = CartItem.objects.get_or_create(cart=cart, item=item)
 
     if not created:
@@ -343,6 +352,7 @@ def add_to_cart(request, item_id):
     ci.save()
 
     return JsonResponse({"success": True})
+
 
 
 @require_POST
@@ -373,7 +383,7 @@ def view_cart(request):
     cart = Cart.objects.filter(username=username).first()
     cart_items = []
     cart_count = 0
-    product_total = 0
+    product_total = Decimal("0.00")
 
     if cart:
         for ci in CartItem.objects.filter(cart=cart):
@@ -387,19 +397,20 @@ def view_cart(request):
                 "subtotal": subtotal
             })
 
-    # 🔥 average price per item (safe)
-    item_unit_price = round(product_total / cart_count, 2) if cart_count > 0 else 0
-
-    totals = calculate_cart_totals(request, cart)
-    request.session["checkout_data"] = serialize_decimals(totals)
-
+    totals = calculate_cart_totals(request, cart) if cart else {
+        "product_total": Decimal("0.00"),
+        "delivery_fee": Decimal("0.00"),
+        "coupon_discount": Decimal("0.00"),
+        "gst": Decimal("0.00"),
+        "grand_total": Decimal("0.00"),
+    }
 
     return render(request, "cart.html", {
         "cart_items": cart_items,
         "cart_count": cart_count,
-        "item_unit_price": item_unit_price,   # ✅ NEW
         **totals
     })
+
 
 
 
@@ -581,6 +592,11 @@ def checkout(request):
         "order_id": razorpay_order["id"],
     })
 
+    cart = Cart.objects.filter(username=username).first()
+    if not cart:
+        return redirect("view_cart")
+
+
 
 @require_POST
 def payment_success(request):
@@ -638,6 +654,11 @@ def payment_success(request):
     request.session.pop("razorpay_order_id", None)
 
     return JsonResponse({"success": True})
+
+    cart = Cart.objects.filter(username=username).first()
+    if not cart:
+        return redirect("view_cart")
+
 
 
 
@@ -883,18 +904,3 @@ def order_history(request):
     return render(request, "order_history.html", {
         "orders": orders
     })
-
-def cart_view(request):
-    if not request.user.is_authenticated:
-        return redirect("open_signin")
-
-    cart, created = Cart.objects.get_or_create(user=request.user)
-
-    return render(
-        request,
-        "cart.html",
-        {
-            "cart": cart,
-            "items": cart.items.all()
-        }
-    )
