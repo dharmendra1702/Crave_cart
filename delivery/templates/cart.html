@@ -347,6 +347,20 @@ body[data-theme="dark"] .coupon-modal {
     margin-bottom: 20px;
 }
 
+/* ================= CART ITEMS SPACING FIX ================= */
+
+.cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 26px; /* 🔥 PERFECT spacing between items */
+}
+
+/* extra safety for glassmorphism */
+.cart-card {
+    background-clip: padding-box;
+}
+
+
 
 
     </style>
@@ -419,7 +433,8 @@ body[data-theme="dark"] .coupon-modal {
 
 
     <!-- ================= LEFT ITEMS ================= -->
-    <div>
+    <div class="cart-items">
+
         {% for ci in cart_items %}
         <div class="cart-card">
             {% if ci.item.picture_file %}
