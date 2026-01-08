@@ -318,10 +318,13 @@ def open_customer_show_restaurants(request):
     cart = Cart.objects.filter(username=username).first()
     cart_count = sum(ci.quantity for ci in CartItem.objects.filter(cart=cart)) if cart else 0
 
-    return render(request, "delivery/customer_show_restaurants.html", {
-    "restaurants": restaurants,
-    "username": username
-})
+    return render(
+        request,
+        "customer_show_restaurants.html",
+        {
+            "restaurants": restaurants
+        }
+    )
 
 
 
@@ -880,3 +883,18 @@ def order_history(request):
     return render(request, "order_history.html", {
         "orders": orders
     })
+
+def cart_view(request):
+    if not request.user.is_authenticated:
+        return redirect("open_signin")
+
+    cart, created = Cart.objects.get_or_create(user=request.user)
+
+    return render(
+        request,
+        "cart.html",
+        {
+            "cart": cart,
+            "items": cart.items.all()
+        }
+    )
