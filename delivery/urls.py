@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
 from django.conf import settings
@@ -51,7 +51,7 @@ urlpatterns = [
     path("admin-panel/ratings/", views.admin_ratings_dashboard, name="admin_ratings"),
     path("orders/<int:order_id>/rate/", views.rate_order, name="rate_order"),
     path("favicon.ico",RedirectView.as_view(url=static("images/faviconn.png"))),
-
+    path("", include("delivery.urls")),
 
 
 

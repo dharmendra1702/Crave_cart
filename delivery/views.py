@@ -11,7 +11,7 @@ from .models import Cart, CartItem, Order, OrderItem, User
 from .models import Restaurant
 from .models import Item
 from .models import Coupon
-from cravecart.delivery import models
+from delivery import models
 
 # Create your views here.
 def home(request):
