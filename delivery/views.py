@@ -630,24 +630,25 @@ def payment_success(request):
 
     for ci in CartItem.objects.filter(cart=cart):
 
-        # ✅ RESOLVE IMAGE CORRECTLY
+        item = ci.item   # ✅ CORRECT
+
         image_url = None
 
-        # Case 1: URL-based image
-        if ci.item.picture:
-            image_url = ci.item.picture
-
-        # Case 2: Cloudinary image
-        elif ci.item.picture_file:
-            image_url = ci.item.picture_file.url
+        # Priority: Cloudinary > URL
+        if item.picture_file:
+            image_url = item.picture_file.url
+        elif item.picture:
+            image_url = item.picture
 
         OrderItem.objects.create(
             order=order,
-            item_name=ci.item.name,
-            price=ci.item.price,
+            item_name=item.name,
+            price=item.price,
             quantity=ci.quantity,
-            item_image=image_url  # 🔥 THIS IS THE FIX
+            item_image=image_url   # ✅ FIXED
         )
+
+
 
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()

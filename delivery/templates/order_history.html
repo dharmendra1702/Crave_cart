@@ -108,76 +108,88 @@
       </div>
     </div>
 
-    <span class="order-status {{ order.status }}" id="status-{{ order.id }}">
-        {{ order.get_status_display }}
+    <span class="order-status {{ order.status }}">
+      {{ order.get_status_display }}
     </span>
-
   </div>
 
-  <!-- BODY -->
-  <div class="order-body">
+  <!-- ITEMS LIST -->
+  <div class="order-left">
 
-    <!-- LEFT -->
-    <div class="order-left">
-      {% with first=order.items.first %}
-      <img src="{{ first.item_image }}"
-           onerror="this.src='{% static 'images/food-placeholder.png' %}'">
+  {% for item in order.items.all %}
+    {% if forloop.first %}
+      <!-- FIRST ITEM -->
+      <div class="order-item-row">
+        <img
+          src="{{ item.item_image|default:'/static/images/default-food.png' }}"
+          onerror="this.src='{% static 'images/default-food.png' %}'"
+          alt="{{ item.item_name }}"
+        >
 
-      <div class="order-info">
-        <strong>{{ first.item_name }}</strong>
-        <div class="qty-price">
-          Qty {{ first.quantity }} * ₹{{ first.price }}
+        <div class="order-info">
+          <strong>{{ item.food.name }}</strong>
+          <div class="qty-price">
+            Qty {{ item.quantity }} × ₹{{ item.price }}
+          </div>
         </div>
-        <div class="price-breakdown">
+      </div>
+    {% endif %}
+  {% endfor %}
 
-  <div class="row">
-    <span>Item total</span>
-    <span>₹{{ order.subtotal }}</span>
-  </div>
+  {% if order.items.count > 1 %}
+    <div class="more-items" onclick="toggleItems({{ order.id }}); this.innerText = this.innerText.includes('more') ? 'Show less' : '+{{ order.items.count|add:"-1" }} more items';">
+      +{{ order.items.count|add:"-1" }} more items
+    </div>
 
-  <div class="row">
-    <span>GST ({{ order.gst_percent }}%)</span>
-    <span>₹{{ order.gst_amount }}</span>
-  </div>
+    <div class="extra-items" id="items-{{ order.id }}">
+      {% for item in order.items.all|slice:"1:" %}
+        <div class="order-item-row small">
+          <img
+            src="{% if item.item.image %}{{ item.item.image }}{% else %}{% static 'images/default-food.png' %}{% endif %}"
+            onerror="this.src='{% static 'images/default-food.png' %}'"
+            alt="{{ item.item.name }}"
+          >
 
-  <div class="row">
-    <span>Delivery fee</span>
-    <span>₹{{ order.delivery_fee }}</span>
-  </div>
 
-  <div class="row total">
-    <span>Total paid</span>
-    <span>₹{{ order.total_amount }}</span>
-  </div>
+          <div class="order-info">
+            <strong>{{ item.food.name }}</strong>
+            <div class="qty-price">
+              Qty {{ item.quantity }} × ₹{{ item.price }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
 </div>
 
 
-
-        {% if order.items.count > 1 %}
-        <div class="more-items" onclick="toggleItems('{{ order.id }}')">
-          +{{ order.items.count|add:"-1" }} more items
-        </div>
-        {% endif %}
-      </div>
-      {% endwith %}
+  <!-- PRICE BREAKDOWN -->
+  <div class="price-breakdown">
+    <div class="row">
+      <span>Item total</span>
+      <span>₹{{ order.subtotal }}</span>
     </div>
-
-    <!-- RIGHT -->
-    <div class="order-right">
-      <button class="track-btn" onclick="toggleTrack('{{ order.id }}')">
-        🚚 Track Order
-        </button>
+    <div class="row">
+      <span>GST (5%)</span>
+      <span>₹{{ order.gst_amount }}</span>
+    </div>
+    <div class="row">
+      <span>Delivery fee</span>
+      <span>₹{{ order.delivery_fee }}</span>
+    </div>
+    <div class="row total">
+      <span>Total paid</span>
+      <span>₹{{ order.total_amount }}</span>
     </div>
   </div>
 
-  <!-- HIDDEN ITEMS -->
-  <div class="extra-items" id="items-{{ order.id }}">
-    {% for item in order.items.all|slice:"1:" %}
-    <div class="extra-row">
-      {{ item.item_name }} × {{ item.quantity }}
-    </div>
-    {% endfor %}
+  <!-- TRACK BUTTON -->
+  <div class="order-right" style="margin-top:12px;">
+    <button class="track-btn" onclick="toggleTrack({{ order.id }})">
+  🚚 Track Order
+</button>
   </div>
 
   <!-- TRACK PANEL -->
@@ -193,18 +205,15 @@
   <!-- FOOTER -->
   <div class="order-footer">
     {% if order.status == "DELIVERED" %}
-  <div class="eta delivered">
-     ✅ Delivered in {{ order.delivery_minutes }} minutes
-     <div class="delivery-date">
-        Delivered on <span>{{ order.delivered_at|date:"d M Y, h:i A" }}</span>
-     </div>
-  </div>
-{% else %}
-  <div class="eta">
-    ⏱ Estimated delivery: <b>30–40 mins</b>
-  </div>
-{% endif %}
-
+      <div class="eta delivered">
+        ✅ Delivered in {{ order.delivery_minutes }} minutes
+        <div class="delivery-date">
+          Delivered on <span>{{ order.delivered_at|date:"d M Y, h:i A" }}</span>
+        </div>
+      </div>
+    {% else %}
+      <div class="eta">⏱ Estimated delivery: <b>30–40 mins</b></div>
+    {% endif %}
 
     <div class="footer-right">
       <a href="{% url 'download_invoice' order.id %}" class="invoice-btn">Invoice</a>
@@ -214,30 +223,33 @@
 
   <!-- RATING -->
   {% if order.status == "DELIVERED" and not order.rating %}
-<div class="rating-box">
-  <form method="post" action="{% url 'rate_order' order.id %}">
-    {% csrf_token %}
-
-    <div class="stars">
-      {% for i in "54321" %}
-        <input type="radio" id="star{{ i }}-{{ order.id }}" name="rating" value="{{ i }}" required>
-        <label for="star{{ i }}-{{ order.id }}">★</label>
-      {% endfor %}
+    <div class="rating-box">
+      <form method="post" action="{% url 'rate_order' order.id %}">
+        {% csrf_token %}
+        <div class="stars">
+          {% for i in "54321" %}
+            <input type="radio" id="star{{ i }}-{{ order.id }}" name="rating" value="{{ i }}" required>
+            <label for="star{{ i }}-{{ order.id }}">★</label>
+          {% endfor %}
+        </div>
+        <textarea name="review" placeholder="Write a review (optional)…"></textarea>
+        <button class="rate-btn">Submit Review</button>
+      </form>
     </div>
+  {% endif %}
 
-    <textarea name="review" placeholder="Write a review (optional)…"></textarea>
-    <button class="rate-btn">Submit Review</button>
-  </form>
-</div>
-{% endif %}
-
-
-{% if order.rating %}
+  {% if order.rating %}
 <div class="rated-box">
   ⭐ Rated: {{ order.rating }}/5 <br>
   <em>{{ order.review }}</em>
 </div>
 {% endif %}
+
+</div>
+
+
+
+
 
 
 </div>
@@ -323,8 +335,6 @@ function toggleItems(id) {
 function toggleTrack(orderId) {
   const panel = document.getElementById("track-" + orderId);
 
-  if (!panel) return;
-
   document.querySelectorAll(".track-panel").forEach(p => {
     if (p !== panel) p.classList.remove("open");
   });
@@ -332,7 +342,7 @@ function toggleTrack(orderId) {
   panel.classList.toggle("open");
 }
 
-/* ---------- EXTRA ITEMS ---------- */
+/* ---------- EXTRA ITEMS (SHOW MORE / LESS) ---------- */
 function toggleItems(orderId) {
   const el = document.getElementById("items-" + orderId);
   el.classList.toggle("open");
@@ -344,12 +354,11 @@ function startLiveTracking(orderId) {
     fetch(`/order-status/${orderId}/`)
       .then(res => res.json())
       .then(data => {
-        const badge = document.getElementById(`status-${orderId}`);
+        const badge = document.querySelector(`.order-status.${orderId}`);
         if (!badge) return;
 
         badge.textContent = data.status_display;
         badge.className = `order-status ${data.status}`;
-
         updateSteps(orderId, data.status);
       });
   }, 5000);
@@ -358,13 +367,10 @@ function startLiveTracking(orderId) {
 /* ---------- TRACK STEPS ---------- */
 function updateSteps(orderId, status) {
   const steps = document.querySelectorAll(`#track-${orderId} .step`);
-  const orderFlow = ["PLACED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
+  const flow = ["PLACED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
 
-  steps.forEach((step, index) => {
-    step.classList.toggle(
-      "active",
-      orderFlow.indexOf(status) >= index
-    );
+  steps.forEach((step, i) => {
+    step.classList.toggle("active", flow.indexOf(status) >= i);
   });
 }
 </script>

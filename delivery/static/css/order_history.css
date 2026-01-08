@@ -633,3 +633,71 @@ body[data-theme="dark"] .price-breakdown .row.total span {
     font-weight: 700;
 }
 
+.order-item-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.more-items {
+  font-size: 13px;
+  color: #0ea5e9;
+  cursor: pointer;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.extra-items {
+  display: none;
+  margin-top: 10px;
+}
+
+.extra-items.open {
+  display: block;
+}
+
+.order-item-row.small img {
+  width: 60px;
+  height: 60px;
+}
+
+.track-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 12px;
+  padding: 0 18px;
+  transform: translateY(-10px);
+  transition: all 0.35s ease;
+}
+
+.track-panel.open {
+  max-height: 200px;
+  opacity: 1;
+  padding: 18px;
+  transform: translateY(0);
+}
+
+.extra-items {
+  display: none;
+  margin-top: 10px;
+}
+
+.extra-items.open {
+  display: block;
+}
+
+.track-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.35s ease;
+}
+
+.track-panel.open {
+  max-height: 200px;
+  opacity: 1;
+}
+
+

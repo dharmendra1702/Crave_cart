@@ -214,3 +214,14 @@ function setCartCount(count) {
         el.classList.add("hidden");
     }
 }
+
+function toggleTrack(orderId) {
+  const panel = document.getElementById("track-" + orderId);
+
+  document.querySelectorAll(".track-panel").forEach(p => {
+    if (p !== panel) p.classList.remove("open");
+  });
+
+  panel.classList.toggle("open");
+}
+
