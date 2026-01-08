@@ -5,7 +5,8 @@ from django.contrib.auth import views as auth_views
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.views.generic import RedirectView
+from django.templatetags.static import static
 
 urlpatterns = [
     path('', views.index),
@@ -49,6 +50,8 @@ urlpatterns = [
     path("admin-panel/orders/<int:order_id>/update/", views.admin_update_order_status, name="admin_update_order_status"),
     path("admin-panel/ratings/", views.admin_ratings_dashboard, name="admin_ratings"),
     path("orders/<int:order_id>/rate/", views.rate_order, name="rate_order"),
+    path("favicon.ico",RedirectView.as_view(url=static("images/faviconn.png"))),
+
 
 
 
