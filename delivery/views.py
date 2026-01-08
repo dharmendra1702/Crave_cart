@@ -11,6 +11,7 @@ from .models import Cart, CartItem, Order, OrderItem, User
 from .models import Restaurant
 from .models import Item
 from .models import Coupon
+from cravecart.delivery import models
 
 # Create your views here.
 def home(request):
@@ -316,10 +317,12 @@ def open_customer_show_restaurants(request):
     restaurants = Restaurant.objects.all()
 
     cart = Cart.objects.filter(username=username).first()
-    cart_count = (
-        sum(ci.quantity for ci in CartItem.objects.filter(cart=cart))
-        if cart else 0
-    )
+    cart_count = 0
+
+    if cart:
+        cart_count = CartItem.objects.filter(cart=cart).aggregate(
+            total=models.Sum("quantity")
+        )["total"] or 0
 
     return render(
         request,
@@ -333,8 +336,6 @@ def open_customer_show_restaurants(request):
 
 
 
-
-@require_POST
 @require_POST
 def add_to_cart(request, item_id):
     username = request.session.get("username")
@@ -357,7 +358,9 @@ def add_to_cart(request, item_id):
 
 @require_POST
 def decrease_cart_item(request, item_id):
-    username = request.session["username"]
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
     request.session.pop("applied_coupon", None)
 
     cart = Cart.objects.get(username=username)
@@ -372,15 +375,13 @@ def decrease_cart_item(request, item_id):
     return JsonResponse({"success": True})
 
 
-
-
-
 def view_cart(request):
     username = request.session.get("username")
     if not username:
         return redirect("signin")
 
     cart = Cart.objects.filter(username=username).first()
+
     cart_items = []
     cart_count = 0
     product_total = Decimal("0.00")
@@ -390,26 +391,28 @@ def view_cart(request):
             subtotal = ci.item.price * ci.quantity
             product_total += subtotal
             cart_count += ci.quantity
-
             cart_items.append({
                 "item": ci.item,
                 "quantity": ci.quantity,
                 "subtotal": subtotal
             })
 
-    totals = calculate_cart_totals(request, cart) if cart else {
-        "product_total": Decimal("0.00"),
-        "delivery_fee": Decimal("0.00"),
-        "coupon_discount": Decimal("0.00"),
-        "gst": Decimal("0.00"),
-        "grand_total": Decimal("0.00"),
-    }
+        totals = calculate_cart_totals(request, cart)
+    else:
+        totals = {
+            "product_total": Decimal("0.00"),
+            "delivery_fee": Decimal("0.00"),
+            "coupon_discount": Decimal("0.00"),
+            "gst": Decimal("0.00"),
+            "grand_total": Decimal("0.00"),
+        }
 
     return render(request, "cart.html", {
         "cart_items": cart_items,
         "cart_count": cart_count,
         **totals
     })
+
 
 
 
@@ -431,7 +434,10 @@ def remove_cart_item(request, item_id):
 @require_POST
 def apply_coupon(request):
     code = request.POST.get("code", "").strip()
-    username = request.session["username"]
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
+
 
     cart = Cart.objects.get(username=username)
     totals = calculate_cart_totals(request, cart)
@@ -600,7 +606,10 @@ def checkout(request):
 
 @require_POST
 def payment_success(request):
-    username = request.session["username"]
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
+
     user = User.objects.get(username=username)
     cart = Cart.objects.get(username=username)
 
@@ -668,10 +677,10 @@ def order_success(request):
     Cart.objects.filter(username=request.session.get("username")).delete()
     return render(request, "order_success.html")
 
-def order_history(request):
-    user = User.objects.get(username=request.session["username"])
-    orders = Order.objects.filter(user=user).order_by("-created_at")
-    return render(request, "order_history.html", {"orders": orders})
+# def order_history(request):
+#     user = User.objects.get(username=request.session["username"])
+#     orders = Order.objects.filter(user=user).order_by("-created_at")
+#     return render(request, "order_history.html", {"orders": orders})
 
 
 from .models import CartItem
