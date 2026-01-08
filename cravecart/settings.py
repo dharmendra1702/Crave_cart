@@ -116,6 +116,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'cravecart.wsgi.application'
 
 
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
