@@ -5,7 +5,7 @@
   --bg-page: #f4f5f7;
   --bg-card: #ffffff;
   --text-main: #0f172a;
-  --text-muted: #64748b;
+  /* --text-muted: #64748b; */
 
   --btn-primary: #0ea5e9;
   --btn-secondary: #e5e7eb;
@@ -49,7 +49,7 @@ body[data-theme="dark"] {
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 5px;
 }
 
 body[data-theme="dark"] .order-card {
@@ -701,3 +701,187 @@ body[data-theme="dark"] .price-breakdown .row.total span {
 }
 
 
+.order-items-box {
+  border-radius: 14px;
+  padding: 14px;
+  width: 260px;
+}
+
+.order-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.order-item img {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.extra-items {
+  display: none;
+}
+
+.extra-items.show {
+  display: block;
+}
+
+.more-items-btn {
+  background: #f3f7ff;
+  border: none;
+  color: #1a73e8;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+
+
+/* ---------- ORDER CARD ---------- */
+.order-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 30px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+/* ---------- ITEMS BOX ---------- */
+.order-items-box {
+  display: inline-block;
+  border-radius: 18px;
+  padding: 14px;
+  margin-top: 14px;
+  max-width: 320px;
+}
+
+/* ---------- ITEM ---------- */
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.order-item img {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* ---------- + MORE ITEMS ---------- */
+.more-items-btn {
+  width: 100%;
+  border: none;
+  background: #f4f8ff;
+  color: #1677ff;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* ---------- EXTRA ITEMS ---------- */
+.extra-items {
+  display: none;
+  margin-top: 10px;
+}
+
+.extra-items.open {
+  display: block;
+}
+
+/* ---------- PRICE BREAKDOWN ---------- */
+.price-breakdown {
+  margin-top: 18px;
+}
+
+.price-breakdown .row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.price-breakdown .row.total {
+  font-weight: 700;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+/* ---------- DISCOUNT ---------- */
+.price-breakdown .discount {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* ---------- TRACK BUTTON ---------- */
+.track-btn {
+  margin-top: 16px;
+  width: 100%;
+  background: #14a3e2;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ---------- FOOTER ---------- */
+.order-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-right a {
+  margin-left: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #1677ff;
+}
+
+.extra-items {
+  display: none;
+}
+
+.extra-items.open {
+  display: block;
+}
+
+.extra-items {
+  display: none;
+  margin-top: 8px;
+}
+
+.extra-items.open {
+  display: block;
+}
+
+.more-items-btn {
+  margin-top: 10px;
+  color: #1a73e8;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+.extra-items {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.extra-items.open {
+  max-height: 500px;
+}

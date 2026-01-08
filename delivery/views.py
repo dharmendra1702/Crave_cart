@@ -409,9 +409,6 @@ def view_cart(request):
 
 
 
-
-
-
 @require_POST
 def remove_cart_item(request, item_id):
     username = request.session.get("username")
@@ -429,30 +426,47 @@ def remove_cart_item(request, item_id):
 def apply_coupon(request):
     code = request.POST.get("code", "").strip()
     username = request.session.get("username")
+
     if not username:
-        return redirect("signin")
+        return JsonResponse({"error": "Login required"}, status=401)
 
+    cart = Cart.objects.filter(username=username).first()
+    if not cart:
+        return JsonResponse({"error": "Cart is empty"})
 
-    cart = Cart.objects.get(username=username)
     totals = calculate_cart_totals(request, cart)
 
-    coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+    try:
+        coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+    except Coupon.DoesNotExist:
+        return JsonResponse({"error": "Invalid or expired coupon ❌"})
 
-    if totals["product_total"] < coupon.min_order_amount:
-        return JsonResponse({"error": "Minimum order not met"})
+    # 🚫 CHECK USAGE LIMIT
+    if coupon.used_count >= coupon.usage_limit:
+        return JsonResponse({"error": "Coupon usage limit reached ❌"})
 
+    min_order = Decimal(str(coupon.min_order_amount))
+    if totals["product_total"] < min_order:
+        return JsonResponse({
+            "error": f"Minimum order ₹{min_order} required"
+        })
+
+    # Calculate discount
     if coupon.discount_type == "percent":
-        discount = totals["product_total"] * coupon.discount_value / 100
+        discount = (totals["product_total"] * Decimal(coupon.discount_value)) / 100
     else:
-        discount = coupon.discount_value
+        discount = Decimal(coupon.discount_value)
+
+    print("🔥 APPLY COUPON HIT 🔥")
 
     request.session["applied_coupon"] = {
         "code": coupon.code,
-        "discount": round(discount, 2),
-        "min_order": coupon.min_order_amount
+        "discount": float(round(discount, 2)),
+        "min_order": float(min_order),
     }
 
     return JsonResponse({"success": True})
+
 
 
 @require_POST
@@ -472,7 +486,6 @@ def generate_unique_coupon():
             return code
 
 def create_coupon(request):
-    # 🔒 ADMIN CHECK (SESSION BASED)
     if request.session.get("username") != "admin":
         return redirect("signin")
 
@@ -483,6 +496,7 @@ def create_coupon(request):
         discount_value = request.POST.get("discount_value")
         min_order_amount = request.POST.get("min_order_amount", 0)
         is_active = "is_active" in request.POST
+        usage_limit = int(request.POST.get("usage_limit", 1))
 
         # 🔹 BULK CREATE
         if request.POST.get("bulk"):
@@ -492,6 +506,8 @@ def create_coupon(request):
                     discount_type=discount_type,
                     discount_value=discount_value,
                     min_order_amount=min_order_amount,
+                    usage_limit=usage_limit,
+                    used_count=0,
                     is_active=is_active
                 )
             message = "✅ 50 coupons generated successfully!"
@@ -510,19 +526,17 @@ def create_coupon(request):
                     discount_type=discount_type,
                     discount_value=discount_value,
                     min_order_amount=min_order_amount,
+                    usage_limit=usage_limit,
+                    used_count=0,
                     is_active=is_active
                 )
                 message = "✅ Coupon created successfully!"
 
     coupons = Coupon.objects.all().order_by("-id")
-
-    # ✅ IMPORTANT: RENDER — NOT REDIRECT
     return render(request, "coupon.html", {
         "coupons": coupons,
         "message": message
     })
-
-
 
 
 def toggle_coupon(request, cid):
@@ -530,30 +544,6 @@ def toggle_coupon(request, cid):
     coupon.is_active = not coupon.is_active
     coupon.save()
     return redirect("create_coupon")
-
-def place_order(request):
-    username = request.session.get("username")
-    user = User.objects.get(username=username)
-
-    # ✅ order placed successfully here
-    # Order.objects.create(...)
-
-    coupon_data = request.session.get("applied_coupon")
-
-    if coupon_data:
-        coupon = Coupon.objects.get(code=coupon_data["code"])
-
-        # ✅ mark used AFTER success
-        coupon.used_by.add(user)
-
-        # OPTIONAL: delete coupon permanently
-        coupon.delete()
-
-        request.session.pop("applied_coupon", None)
-
-    Cart.objects.filter(username=username).delete()
-
-    return render(request, "order_success.html")
 
 import razorpay
 from django.conf import settings
@@ -614,19 +604,42 @@ def payment_success(request):
 
     totals = calculate_cart_totals(request, cart)
 
+    applied_coupon = request.session.get("applied_coupon")
+
+    discount_amount = Decimal("0.00")
+    coupon_code = None
+
+    if applied_coupon:
+        coupon_code = applied_coupon["code"]
+        discount_amount = Decimal(str(applied_coupon["discount"]))
+
+
     order = Order.objects.create(
     user=user,
-
-    # 🔥 SAVE FULL BREAKDOWN
-    subtotal=float(totals["product_total"]),
-    gst_percent=5,  # or store dynamically
-    gst_amount=float(totals["gst"]),
-    delivery_fee=float(totals["delivery_fee"]),
-
-    total_amount=float(totals["grand_total"]),
+    subtotal=totals["product_total"],
+    gst_amount=totals["gst"],
+    delivery_fee=totals["delivery_fee"],
+    coupon_code=coupon_code,                # ✅ STRING ONLY
+    coupon_discount=discount_amount,        # ✅ DECIMAL
+    total_amount=totals["grand_total"],
     payment_id=data.get("razorpay_payment_id")
 )
+    # ✅ INCREMENT COUPON USAGE
+    if coupon_code:
+        coupon = Coupon.objects.get(code=coupon_code)
+        coupon.used_count += 1
 
+        if coupon.used_count >= coupon.usage_limit:
+            coupon.is_active = False
+
+        coupon.save()
+
+
+    coupon_data = request.session.get("applied_coupon")
+    coupon_discount = Decimal("0.00")
+
+    if coupon_data:
+        coupon_discount = Decimal(str(coupon_data["discount"]))
 
     for ci in CartItem.objects.filter(cart=cart):
 
@@ -648,8 +661,6 @@ def payment_success(request):
             item_image=image_url   # ✅ FIXED
         )
 
-
-
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
@@ -662,6 +673,10 @@ def payment_success(request):
     cart = Cart.objects.filter(username=username).first()
     if not cart:
         return redirect("view_cart")
+    
+    request.session.pop("applied_coupon", None)
+    request.session.pop("razorpay_order_id", None)
+
 
 
 

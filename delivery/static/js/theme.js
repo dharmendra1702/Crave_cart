@@ -225,3 +225,21 @@ function toggleTrack(orderId) {
   panel.classList.toggle("open");
 }
 
+function toggleItems(orderId, btn) {
+  const box = document.getElementById("items-" + orderId);
+
+  box.classList.toggle("show");
+
+  if (box.classList.contains("show")) {
+    btn.innerText = "Show less";
+  } else {
+    btn.innerText = "+" + box.children.length + " more items";
+  }
+}
+
+
+function toggleItems(id) {
+  document.getElementById("items-" + id).classList.toggle("open");
+}
+
+
