@@ -67,41 +67,38 @@ def signup(request):
 
 import hashlib
 def signin(request):
-    #Go to sign in page and authenticate user
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        # Authenticate user
-        try:
-            user = User.objects.get(username=username, password=password)
-            hashed = hashlib.sha256(password.encode()).hexdigest()
 
+        user = User.objects.filter(username=username, password=password).first()
 
-            # Set session
-            request.session["username"] = user.username
-            # Redirect based on user role if admin or normal user
-            if user.username.lower() == "admin":
-                return redirect("admin_dashboard")
-            else:
-                restaurants = Restaurant.objects.all()
-            return render(request, 'user_dashboard.html',{"restaurants" : restaurants, "username" : username})
-            # return render(request, "user_dashboard.html", {
-        except User.DoesNotExist:
-            return render(request, "fail.html")
+        if not user:
+            return render(request, "signin.html", {
+                "error": "Invalid username or password"
+            })
+
+        request.session["username"] = user.username
+
+        if user.username.lower() == "admin":
+            return redirect("admin_dashboard")
+
+        return redirect("open_customer_show_restaurants")
 
     return render(request, "signin.html")
 
-def admin_dashboard(request):
-    show_rating_alert = request.session.get("new_rating", False)
 
-    # CLEAR after reading
-    if show_rating_alert:
-        del request.session["new_rating"]
+def admin_dashboard(request):
+    if request.session.get("username") != "admin":
+        return redirect("signin")
+
+    show_rating_alert = request.session.pop("new_rating", False)
 
     return render(request, "admin_dashboard.html", {
-        "username": request.session.get("username"),
+        "username": "admin",
         "show_rating_alert": show_rating_alert,
     })
+
 
 def user_dashboard(request):
     username = request.session.get("username")

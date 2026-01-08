@@ -31,7 +31,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 
 
 
