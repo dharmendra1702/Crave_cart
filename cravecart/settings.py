@@ -15,8 +15,6 @@ import os
 import dj_database_url
 import cloudinary
 from django.contrib.auth import get_user_model
-from dotenv import load_dotenv
-load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
