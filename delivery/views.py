@@ -11,7 +11,9 @@ from .models import Cart, CartItem, Order, OrderItem, User
 from .models import Restaurant
 from .models import Item
 from .models import Coupon
-from delivery import models
+from django.db.models import Sum
+
+
 
 # Create your views here.
 def home(request):
@@ -318,11 +320,6 @@ def open_customer_show_restaurants(request):
 
     cart = Cart.objects.filter(username=username).first()
     cart_count = 0
-
-    if cart:
-        cart_count = CartItem.objects.filter(cart=cart).aggregate(
-            total=models.Sum("quantity")
-        )["total"] or 0
 
     return render(
         request,
