@@ -2,6 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 import random
 from django.utils.timezone import localtime
+from django.utils import timezone
 
 class User(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -60,19 +61,33 @@ class CartItem(models.Model):
 
 
 class Coupon(models.Model):
-    code = models.CharField(max_length=20, unique=True)
-    discount_type = models.CharField(
-        max_length=10,
-        choices=[("percent", "Percent"), ("flat", "Flat")]
+    code = models.CharField(max_length=50, unique=True)
+
+    DISCOUNT_CHOICES = (
+        ("percent", "Percentage"),
+        ("flat", "Flat"),
     )
-    discount_value = models.PositiveIntegerField()
-    min_order_amount = models.PositiveIntegerField(default=0)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_CHOICES)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+
+    min_order_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+
     is_active = models.BooleanField(default=True)
 
-    used_by = models.ManyToManyField(User, blank=True)
+    # ✅ USAGE LIMIT SYSTEM
+    usage_limit = models.PositiveIntegerField(default=1)
+    used_count = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def is_available(self):
+        return self.is_active and self.used_count < self.usage_limit
 
     def __str__(self):
         return self.code
+
 
 
 from django.utils import timezone
@@ -93,6 +108,13 @@ class Order(models.Model):
 
     order_number = models.CharField(max_length=11, unique=True, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    coupon_code = models.CharField(max_length=50, blank=True, null=True)
+    coupon_discount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
     subtotal = models.FloatField(default=0)
     gst_percent = models.PositiveIntegerField(default=5)
@@ -136,6 +158,8 @@ class OrderItem(models.Model):
     item_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.IntegerField()
+    coupon_discount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
+
 
     # 🖼 Snapshot image
     item_image = models.URLField(blank=True, null=True)

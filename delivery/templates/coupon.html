@@ -441,6 +441,11 @@ input::placeholder {
         <label>Active</label>
     </div>
 
+    <div class="form-group">
+        <label>Usage Limit</label>
+        <input type="number" name="usage_limit" value="1" min="1" required>
+    </div>
+
     <button type="submit" class="btn primary full-width">
         Create Coupon
     </button>
@@ -473,24 +478,33 @@ input::placeholder {
         <tbody>
             {% for c in coupons %}
             <tr>
-                <td>{{ c.code }}</td>
-                <td>
-                    {% if c.discount_type == "percent" %}
-                        {{ c.discount_value }}%
-                    {% else %}
-                        ₹{{ c.discount_value }}
-                    {% endif %}
-                </td>
-                <td>₹{{ c.min_order_amount }}</td>
-                <td class="status {% if c.is_active %}active{% else %}inactive{% endif %}">
-                    {% if c.is_active %}Active{% else %}Disabled{% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'toggle_coupon' c.id %}" class="btn small secondary ,toggle-wrapper">
-                        Toggle
-                    </a>
-                </td>
-            </tr>
+    <td>{{ c.code }}</td>
+
+    <td>
+        {% if c.discount_type == "percent" %}
+            {{ c.discount_value }}%
+        {% else %}
+            ₹{{ c.discount_value }}
+        {% endif %}
+    </td>
+
+    <td>₹{{ c.min_order_amount }}</td>
+
+    <td>
+        {{ c.used_count }} / {{ c.usage_limit }}
+    </td>
+
+    <td class="status {% if c.is_active %}active{% else %}inactive{% endif %}">
+        {% if c.is_active %}Active{% else %}Disabled{% endif %}
+    </td>
+
+    <td>
+        <a href="{% url 'toggle_coupon' c.id %}" class="btn small secondary">
+            Toggle
+        </a>
+    </td>
+</tr>
+
             {% endfor %}
         </tbody>
     </table>

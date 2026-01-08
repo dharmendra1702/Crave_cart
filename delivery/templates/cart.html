@@ -138,19 +138,38 @@ body[data-theme="dark"] {
         .cart-price {
             font-size: 18px;
             font-weight: bold;
-            color: var(--success);
         }
 
         /* ================= SUMMARY ================= */
         .summary {
-            position: sticky;
-            top: 100px;
-            padding: 26px;
-            border-radius: 22px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
-            background: var(--bg-summary);
-            color: var(--text-primary);
-        }
+    position: sticky;
+    top: 100px;
+
+    padding: 26px;
+    border-radius: 22px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+    background: var(--bg-summary);
+    color: var(--text-primary);
+
+    width: 360px;
+
+    /* ✅ flexible height */
+    max-height: 400px;   /* limit */
+    min-height: fit-content;
+    height: auto;
+
+    overflow-y: auto;   /* scroll only if needed */
+}
+
+
+        
+        .summary {
+    overflow: hidden;
+}
+
+.summary .summary-content {
+    overflow-y: auto;
+}
 
         .summary h3 {
             font-size: 22px;
@@ -360,6 +379,71 @@ body[data-theme="dark"] .coupon-modal {
     background-clip: padding-box;
 }
 
+@media (max-width: 768px) {
+    .summary {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-radius: 16px;
+    }
+}
+
+/* ================= COUPON POPUP (FIXED CENTER MODAL) ================= */
+
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.logout-overlay.show {
+    display: flex;
+}
+
+.logout-modal {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.15);
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    animation: fadeUp 0.25s ease;
+}
+
+body[data-theme="dark"] .logout-modal {
+    background: rgba(20,20,20,0.95);
+    border-color: rgba(255,255,255,0.15);
+}
+
+.logout-modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.logout-modal p {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 22px;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 
 
@@ -506,15 +590,15 @@ body[data-theme="dark"] .coupon-modal {
 
     <!-- 🔥 APPLY COUPON SECTION -->
     <div id="couponSection">
-        {% if coupon_discount %}
+        {% if coupon_discount > 0 %}
             <div class="applied-coupon">
                 <span>Coupon applied</span>
                 <button class="remove-coupon" onclick="removeCoupon()">✕</button>
             </div>
         {% else %}
             <div class="coupon-box">
-                <input type="text" id="couponCode" placeholder="Enter coupon code">
-                <button onclick="applyCoupon()">Apply</button>
+                <input type="text" id="couponInput" placeholder="Enter coupon code">
+                <button type="button" onclick="applyCoupon()">Apply</button>
             </div>
         {% endif %}
     </div>
@@ -567,7 +651,22 @@ body[data-theme="dark"] .coupon-modal {
 <footer class="footer">
     © 2025 Crave Cart
 </footer>
+
+<div id="couponPopup" class="logout-overlay">
+    <div class="logout-modal">
+        <h3 id="popupTitle"></h3>
+        <p id="popupMessage"></p>
+
+        <button class="btn primary full-width" onclick="closeCouponPopup()">
+            OK
+        </button>
+    </div>
+</div>
+
+
 <!-- ================= JS ================= -->
+
+
 
 <script src="{% static 'js/theme.js' %}"></script>
 
@@ -625,12 +724,12 @@ function removeItem(itemId) {
 
 function getCookie(name) {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             cookie = cookie.trim();
-            if (cookie.startsWith(name + "=")) {
-                cookieValue = cookie.substring(name.length + 1);
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
         }
@@ -638,8 +737,16 @@ function getCookie(name) {
     return cookieValue;
 }
 
+const csrftoken = getCookie('csrftoken');
+
+
 function applyCoupon() {
-    const code = document.getElementById("couponCode").value;
+    const couponCode = document.getElementById("couponInput").value.trim();
+
+    if (!couponCode) {
+        showCouponPopup("Coupon Failed ❌", "Please enter a coupon code");
+        return;
+    }
 
     fetch("/apply-coupon/", {
         method: "POST",
@@ -647,17 +754,25 @@ function applyCoupon() {
             "X-CSRFToken": getCookie("csrftoken"),
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: `code=${code}`
+        body: "code=" + encodeURIComponent(couponCode)
     })
     .then(res => res.json())
     .then(data => {
         if (data.error) {
-            showCouponModal("Coupon Failed ❌", data.error);
-            return;
+            showCouponPopup("Coupon Failed ❌", data.error);
+        } else {
+            showCouponPopup(
+                "Coupon Applied 🎉",
+                "Your discount has been applied successfully"
+            );
+
+            setTimeout(() => {
+                location.reload();
+            }, 1200);
         }
-        location.reload(); // 🔥 SINGLE SOURCE OF TRUTH
     });
 }
+
 
 
 function removeCoupon() {
@@ -669,16 +784,17 @@ function removeCoupon() {
     }).then(() => location.reload());
 }
 
-
-function showCouponModal(title, message) {
-    document.getElementById("couponTitle").textContent = title;
-    document.getElementById("couponMessage").textContent = message;
-    document.getElementById("couponOverlay").classList.add("show");
+function showCouponPopup(title, message) {
+    document.getElementById("popupTitle").innerText = title;
+    document.getElementById("popupMessage").innerText = message;
+    document.getElementById("couponPopup").classList.add("show");
 }
 
-function closeCouponModal() {
-    document.getElementById("couponOverlay").classList.remove("show");
+function closeCouponPopup() {
+    document.getElementById("couponPopup").classList.remove("show");
 }
+
+
 
 </script>
 

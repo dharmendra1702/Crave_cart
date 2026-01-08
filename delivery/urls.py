@@ -6,6 +6,8 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
+from django.views.generic.base import RedirectView
+
 
 
 urlpatterns = [
@@ -34,8 +36,8 @@ urlpatterns = [
     path("decrease_cart/<int:item_id>/", views.decrease_cart_item),
     path("remove_cart/<int:item_id>/", views.remove_cart_item, name="remove_cart_item"),
     path("cart/", views.view_cart, name="view_cart"),
-    path("apply-coupon/", views.apply_coupon),
-    path("remove-coupon/", views.remove_coupon),
+    path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path("remove-coupon/", views.remove_coupon, name="remove_coupon"),
     path("admin-panel/create-coupon/", views.create_coupon, name="create_coupon"),
     path("admin-panel/toggle-coupon/<int:cid>/",views.toggle_coupon,name="toggle_coupon"),
     path("checkout/", views.checkout, name="checkout"),
@@ -50,7 +52,7 @@ urlpatterns = [
     path("admin-panel/orders/<int:order_id>/update/", views.admin_update_order_status, name="admin_update_order_status"),
     path("admin-panel/ratings/", views.admin_ratings_dashboard, name="admin_ratings"),
     path("orders/<int:order_id>/rate/", views.rate_order, name="rate_order"),
-    path("favicon.ico",RedirectView.as_view(url=static("images/faviconn.png"))),
+    path("favicon.ico",RedirectView.as_view(url="/static/images/faviconn.png",permanent=True)),
 
 
 
