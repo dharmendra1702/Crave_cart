@@ -104,12 +104,13 @@
                 <!-- IMAGE -->
                 <div class="restaurant-image">
                     {% if r.picture_file %}
-                        <img src="{{ r.picture_file.url }}">
+                        <img src="{{ r.picture_file.url }}" alt="Restaurant">
                     {% elif r.picture %}
-                        <img src="{{ r.picture }}">
+                        <img src="{{ r.picture }}" alt="Restaurant">
                     {% else %}
-                        <img src="{% static 'images/default-restaurant.png' %}">
+                        <img src="{% static 'images/default-restaurant.png' %}" alt="Restaurant">
                     {% endif %}
+
                 </div>
 
 

@@ -100,7 +100,7 @@
 <div class="restaurant-row">
 
     <div class="restaurant-image">
-        {% if r.picture_file %}
+        {% if r.picture_file and r.picture_file.url %}
             <img src="{{ r.picture_file.url }}" class="table-img">
         {% elif r.picture %}
             <img src="{{ r.picture }}" class="table-img">
@@ -108,6 +108,7 @@
             <img src="{% static 'images/default-restaurant.png' %}" class="table-img">
         {% endif %}
     </div>
+
 
     <div class="restaurant-info">
         <h3>{{ r.name }}</h3>
