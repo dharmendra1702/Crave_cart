@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
-from django.db.models.signals import post_migrate
 import os
 
 
@@ -27,3 +26,9 @@ def create_admin(sender, **kwargs):
 class DeliveryConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'delivery'
+
+    def ready(self):
+        import delivery.signals
+
+def ready(self):
+    import delivery.signals

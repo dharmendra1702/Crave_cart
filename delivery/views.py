@@ -7,11 +7,14 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
-from .models import Cart, CartItem, Order, OrderItem, User
+from .models import Cart, CartItem, Order, OrderItem, User, UserExtraAddress, UserExtraMobile, UserProfile
 from .models import Restaurant
 from .models import Item
 from .models import Coupon
 from django.db.models import Sum
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
 
 
 
@@ -923,3 +926,199 @@ def order_history(request):
     return render(request, "order_history.html", {
         "orders": orders
     })
+
+
+
+def profile_view(request):
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
+
+    user = User.objects.get(username=username)
+
+    # ✅ FIX: always ensure profile exists
+    profile, created = UserProfile.objects.get_or_create(user=user)
+
+    extra_mobiles = user.extra_mobiles.all()
+    extra_addresses = user.extra_addresses.all()
+
+    return render(request, "profile.html", {
+        "user": user,
+        "profile": profile,
+        "extra_mobiles": extra_mobiles,
+        "extra_addresses": extra_addresses,
+    })
+
+
+@require_POST
+def update_profile(request):
+    user = User.objects.get(username=request.session["username"])
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # username update
+    new_username = request.POST.get("username")
+
+    if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+        return redirect("profile")
+
+    user.username = new_username
+    user.first_name = request.POST.get("first_name")
+    user.last_name = request.POST.get("last_name")
+    user.save()
+
+    profile.gender = request.POST.get("gender")
+    profile.date_of_birth = request.POST.get("date_of_birth")
+    profile.save()
+
+    # update session username
+    request.session["username"] = new_username
+
+    return redirect("profile")
+
+
+@require_POST
+def add_extra_mobile(request):
+    username = request.session.get("username")
+    user = User.objects.get(username=username)
+
+    mobile = request.POST.get("mobile")
+    if mobile:
+        m = UserExtraMobile.objects.create(user=user, mobile=mobile)
+        return JsonResponse({"id": m.id, "mobile": m.mobile})
+
+    return JsonResponse({"error": "Invalid mobile"}, status=400)
+
+
+@require_POST
+def delete_extra_mobile(request, mid):
+    UserExtraMobile.objects.filter(id=mid).delete()
+    return JsonResponse({"success": True})
+
+@require_POST
+def add_extra_address(request):
+    user = User.objects.get(username=request.session["username"])
+
+    addr = UserExtraAddress.objects.create(
+        user=user,
+        label=request.POST.get("label"),
+        address=request.POST.get("address")
+    )
+
+    return JsonResponse({
+        "id": addr.id,
+        "label": addr.label,
+        "address": addr.address
+    })
+
+
+@require_POST
+def delete_extra_address(request, aid):
+    UserExtraAddress.objects.filter(id=aid).delete()
+    return JsonResponse({"success": True})
+
+@require_POST
+def update_profile_photo(request):
+    user = User.objects.get(username=request.session["username"])
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    if request.FILES.get("profile_photo"):
+        profile.profile_photo = request.FILES["profile_photo"]
+        profile.save()
+
+    return redirect("profile")
+
+@require_POST
+def verify_email_password(request):
+    user = User.objects.get(username=request.session["username"])
+    password = request.POST.get("password")
+
+    if user.password != password:
+        return render(request, "profile.html", {
+            "error": "Incorrect password",
+            "user": user,
+            "profile": user.profile,
+            "extra_mobiles": user.extra_mobiles.all(),
+            "extra_addresses": user.extra_addresses.all(),
+        })
+
+    request.session["email_pwd_verified"] = True
+    return redirect("profile")
+
+
+@require_POST
+def update_email(request):
+    if not request.session.get("email_pwd_verified"):
+        return redirect("profile")
+
+    user = User.objects.get(username=request.session["username"])
+    new_email = request.POST.get("new_email")
+
+    if User.objects.filter(email=new_email).exists():
+        return redirect("profile")
+
+    user.email = new_email
+    user.save()
+
+    request.session.pop("email_pwd_verified")
+    return redirect("profile")
+
+
+@require_POST
+def update_profile(request):
+    user = User.objects.get(username=request.session["username"])
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    user.first_name = request.POST.get("first_name")
+    user.last_name = request.POST.get("last_name")
+    user.save()
+
+    profile.gender = request.POST.get("gender")
+    profile.date_of_birth = request.POST.get("date_of_birth")
+    profile.save()
+
+    return redirect("profile")
+
+
+@require_POST
+def verify_username_password(request):
+    user = User.objects.get(username=request.session["username"])
+    password = request.POST.get("password")
+
+    if user.password != password:
+        return render(request, "profile.html", {
+            "user": user,
+            "profile": user.profile,
+            "extra_mobiles": user.extra_mobiles.all(),
+            "extra_addresses": user.extra_addresses.all(),
+            "username_error": "Incorrect password"
+        })
+
+    request.session["username_pwd_verified"] = True
+    return redirect("profile")
+
+
+@require_POST
+def update_username(request):
+    if not request.session.get("username_pwd_verified"):
+        return redirect("profile")
+
+    user = User.objects.get(username=request.session["username"])
+    new_username = request.POST.get("new_username")
+
+    if User.objects.filter(username=new_username).exists():
+        return render(request, "profile.html", {
+            "user": user,
+            "profile": user.profile,
+            "extra_mobiles": user.extra_mobiles.all(),
+            "extra_addresses": user.extra_addresses.all(),
+            "username_error": "Username already taken"
+        })
+
+    user.username = new_username
+    user.save()
+
+    # IMPORTANT: update session username
+    request.session["username"] = new_username
+    request.session.pop("username_pwd_verified")
+
+    return redirect("profile")

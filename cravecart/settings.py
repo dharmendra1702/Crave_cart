@@ -54,8 +54,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
-DEBUG = True
+DEBUG = False
+# DEBUG = os.environ.get("DEBUG", "False") == "True"
+
 
 
 
@@ -134,19 +135,28 @@ STATICFILES_FINDERS = [
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+import os
+import dj_database_url
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 if DATABASE_URL:
-    # ✅ Production / Render (Postgres)
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=False
+            ssl_require=True
         )
     }
+
+    # ✅ ADD THIS
+    DATABASES["default"]["OPTIONS"] = {
+    "options": "-c search_path=public"
+}
 else:
-    # ✅ Local development (SQLite)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -195,6 +205,8 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 STATICFILES_DIRS = []  # IMPORTANT (empty for Render)
 
 
@@ -212,3 +224,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True

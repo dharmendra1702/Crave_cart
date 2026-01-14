@@ -1,6 +1,7 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
 import random
+from django.shortcuts import render
 from django.utils.timezone import localtime
 from django.utils import timezone
 
@@ -166,3 +167,43 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.item_name} x {self.quantity}"
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+    profile_photo = CloudinaryField("profile_image", blank=True, null=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, blank=True)
+
+    def __str__(self):
+        return self.user.username
+
+
+class UserExtraMobile(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="extra_mobiles"
+    )
+    mobile = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.mobile
+
+
+class UserExtraAddress(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="extra_addresses"
+    )
+    label = models.CharField(max_length=20)
+    address = models.TextField()
+
+    def __str__(self):
+        return self.label
+

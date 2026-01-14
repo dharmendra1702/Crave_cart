@@ -6,6 +6,8 @@ h2 {
   font-weight: 700;
   margin: 30px 0;
   letter-spacing: 0.3px;
+  margin-bottom: 28px;
+  color: var(--text-primary);
 }
 
 /* ===== ORDER CARD ===== */
@@ -13,15 +15,15 @@ h2 {
 .admin-order-card {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(14px);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin: 18px auto;
-  max-width: 720px;
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
+  border-radius: 18px;
+  padding: 22px 26px;
+  margin: 18px auto;
+  max-width: 900px;
 }
 
 .admin-order-card:hover {
@@ -39,7 +41,8 @@ h2 {
   top: 0;
   height: 100%;
   width: 6px;
-  background: linear-gradient(180deg, #0ea5e9, #22c55e);
+  border-radius: 18px 0 0 18px;
+  background: var(--border-glow);
 }
 
 /* ===== TOP ROW ===== */
@@ -49,6 +52,9 @@ h2 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-primary);
 }
 
 .admin-order-card .top strong {
@@ -67,6 +73,7 @@ h2 {
 .admin-order-card div {
   margin: 6px 0;
   font-size: 15px;
+  color: var(--text-secondary);
 }
 
 .admin-order-card .user {
@@ -82,12 +89,13 @@ h2 {
 
 .status {
   display: inline-block;
-  padding: 5px 12px;
   border-radius: 999px;
-  font-size: 13px;
   font-weight: 600;
   margin-left: 6px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.3px;  
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* Status colors */
@@ -97,8 +105,8 @@ h2 {
 }
 
 .status.PREPARING {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--status-preparing-bg);
+  color: var(--status-preparing-text);
 }
 
 .status.OUT_FOR_DELIVERY {
@@ -107,8 +115,8 @@ h2 {
 }
 
 .status.DELIVERED {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--status-delivered-bg);
+  color: var(--status-delivered-text);
 }
 
 .status.CANCELLED {
@@ -146,70 +154,8 @@ p {
   margin-top: 60px;
 }
 
-
-/* Heading */
-h2 {
-  text-align: center;
-  margin-bottom: 28px;
-  color: var(--text-primary);
-}
-
-/* Order Card */
-.admin-order-card {
-  border-radius: 18px;
-  padding: 22px 26px;
-  margin: 18px auto;
-  max-width: 900px;
-  position: relative;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-}
-
 body[data-theme="dark"] .admin-order-card {
   background: rgba(22, 22, 22, 0.75);
-}
-/* Left gradient strip */
-.admin-order-card::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 6px;
-  border-radius: 18px 0 0 18px;
-  background: var(--border-glow);
-}
-
-/* Top Row */
-.admin-order-card .top {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: var(--text-primary);
-}
-
-/* Text */
-.admin-order-card div {
-  color: var(--text-secondary);
-  margin: 6px 0;
-}
-
-/* Status Pills */
-.status {
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.status.PREPARING {
-  background: var(--status-preparing-bg);
-  color: var(--status-preparing-text);
-}
-
-.status.DELIVERED {
-  background: var(--status-delivered-bg);
-  color: var(--status-delivered-text);
 }
 
 /* Button */
@@ -245,8 +191,10 @@ header.header {
   position: absolute;
   top: 120%;
   right: 0;
-
   z-index: 100001;
+  transform: translateY(-8px);
+  opacity: 0;
+  transition: all 0.2s ease;
 }
 
 body {
@@ -263,12 +211,6 @@ header.header,
 .profile-menu,
 .profile-dropdown {
   z-index: 999999 !important;
-}
-
-.profile-dropdown {
-  transform: translateY(-8px);
-  opacity: 0;
-  transition: all 0.2s ease;
 }
 
 .profile-dropdown.show {

@@ -8,7 +8,6 @@ admin.site.register(Item)
 admin.site.register(Cart)
 admin.site.register(Coupon)
 
-
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
