@@ -215,11 +215,11 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "cravecartdr@gmail.com"
-EMAIL_HOST_PASSWORD = "mztv ouwu imfb uadu"
+EMAIL_HOST_USER = os.getenv("HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-ADMIN_ORDER_EMAIL = "cravecartdr@gmail.com"
+ADMIN_ORDER_EMAIL = os.getenv("ADMIN_EMAIL")
 
 
 
