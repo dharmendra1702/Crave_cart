@@ -1,0 +1,12 @@
+Hello Admin,
+
+New order received!
+
+Order ID: {{ order_id }}
+Customer: {{ user_name }}
+Customer Email: {{ user_email }}
+Payment ID: {{ payment_id }}
+
+Total: ₹{{ total }}
+
+- CraveCart System

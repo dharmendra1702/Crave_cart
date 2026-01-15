@@ -207,3 +207,13 @@ class UserExtraAddress(models.Model):
     def __str__(self):
         return self.label
 
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+rating = models.DecimalField(
+    max_digits=2,
+    decimal_places=1,
+    null=True,
+    blank=True,
+    validators=[MinValueValidator(0), MaxValueValidator(5)]
+)

@@ -7,7 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
-<link rel="stylesheet" href="{% static 'css/order_history.css' %}">
+<link rel="stylesheet" href="{% static 'css/history.css' %}">
+
+
 
 </head>
 
@@ -176,10 +178,15 @@
   <!-- FOOTER -->
   <div class="order-footer">
     {% if order.status == "DELIVERED" %}
-      <div class="eta delivered">
-        ✅ Delivered in {{ order.delivery_minutes }} minutes
-      </div>
-    {% else %}
+  <div class="eta delivered">
+    ✅ Delivered in {{ order.delivery_minutes }} minutes
+    {% if order.delivered_at %}
+      <span class="delivered-date">
+        {{ order.delivered_at|date:"d M Y, h:i A" }}
+      </span>
+    {% endif %}
+  </div>
+{% else %}
       <div class="eta">⏱ Estimated delivery: <b>30–40 mins</b></div>
     {% endif %}
 
@@ -191,28 +198,41 @@
 
   <!-- ⭐ RATING (ONLY IF DELIVERED & NOT RATED) -->
   {% if order.status == "DELIVERED" and not order.rating %}
-  <div class="rating-box">
-    <form method="post" action="{% url 'rate_order' order.id %}">
-      {% csrf_token %}
-      <div class="stars">
-        {% for i in "54321" %}
-          <input type="radio" id="star{{ i }}-{{ order.id }}" name="rating" value="{{ i }}" required>
-          <label for="star{{ i }}-{{ order.id }}">★</label>
-        {% endfor %}
-      </div>
-      <textarea name="review" placeholder="Write a review (optional)…"></textarea>
-      <button class="rate-btn">Submit Review</button>
-    </form>
-  </div>
-  {% endif %}
+<div class="rating-box">
+  <form method="post" action="{% url 'rate_order' order.id %}">
+    {% csrf_token %}
+
+    <!-- ✅ PUT SLIDER HERE (replace stars block) -->
+    <div class="rating-slider">
+      <input type="range" name="rating" min="0" max="5" step="0.1" value="4.5"
+             oninput="document.getElementById('rv-{{ order.id }}').textContent=this.value">
+      <span><b id="rv-{{ order.id }}">4.5</b>/5</span>
+    </div>
+
+    <textarea name="review" placeholder="Write a review (optional)…"></textarea>
+    <button class="rate-btn">Submit Review</button>
+  </form>
+</div>
+{% endif %}
+
 
   <!-- ⭐ ALREADY RATED -->
-  {% if order.rating %}
-  <div class="rated-box">
-    ⭐ Rated: {{ order.rating }}/5 <br>
-    <em>{{ order.review }}</em>
+ {% if order.rating %}
+  <div class="rated-pill">
+    <span class="rated-value">{{ order.rating|floatformat:1 }}</span>
+
+    <span class="rated-stars">
+      {% for i in "12345" %}
+        <span class="star {% if order.rating|floatformat:1 >= i %}filled{% endif %}">★</span>
+      {% endfor %}
+    </span>
   </div>
+
+  {% if order.review %}
+    <div class="review-text"><em>{{ order.review }}</em></div>
   {% endif %}
+{% endif %}
+
 
   <script>
     startLiveTracking({{ order.id }});

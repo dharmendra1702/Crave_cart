@@ -1,0 +1,12 @@
+Dear {{ user_name }},
+
+Your order has been placed successfully.
+
+Order ID: {{ order_id }}
+Payment ID: {{ payment_id }}
+Date: {{ order_date }}
+
+Total: ₹{{ total }}
+
+Thank you,
+CraveCart

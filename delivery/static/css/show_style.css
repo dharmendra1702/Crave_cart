@@ -362,8 +362,6 @@ body[data-theme="dark"] .auth-card {
 }
 
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 /* =======================
    THEME VARIABLES
 ======================= */
@@ -657,7 +655,6 @@ body[data-theme="dark"] .auth-form input {
     }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* =======================
    THEME VARIABLES

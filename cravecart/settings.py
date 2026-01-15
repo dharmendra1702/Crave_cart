@@ -54,7 +54,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 
@@ -205,11 +205,21 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 STATICFILES_DIRS = []  # IMPORTANT (empty for Render)
 
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "cravecartdr@gmail.com"
+EMAIL_HOST_PASSWORD = "mztv ouwu imfb uadu"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ADMIN_ORDER_EMAIL = "cravecartdr@gmail.com"
 
 
 
@@ -227,6 +237,20 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+
+# -------------------------------
+# HTTPS / Security (PROD only)
+# -------------------------------
+IS_PROD = os.environ.get("RENDER", "") == "true" or os.environ.get("DJANGO_ENV") == "production"
+
+if IS_PROD:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+else:
+    # Local dev
+    SECURE_PROXY_SSL_HEADER = None
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False

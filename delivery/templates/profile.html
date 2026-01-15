@@ -72,7 +72,7 @@
             <div class="full email-edit-box">
                 <label>Email</label>
                 <div class="email-display">
-                    <input type="text" value="{{ user.email }}" readonly class="readonly">
+                    <input type="email" name="email" id="emailInput" value="{{ user.email }}" readonly class="readonly">
                     <span class="edit-icon disabled"
                           id="emailPen"
                           onclick="openEmailPopup()">✏️</span>
@@ -101,37 +101,48 @@
 
 <!-- ================= USERNAME PASSWORD POPUP ================= -->
 <div id="usernamePopup" class="popup-overlay">
-    <div class="popup-card">
-        <h3>Verify Password</h3>
-        <form method="POST" action="{% url 'verify_username_password' %}">
-            {% csrf_token %}
-            <input type="password" name="password"
-                   placeholder="Enter current password" required>
-            <button class="btn-outline">Verify</button>
-            <button type="button" class="btn-outline"
-                    onclick="closeUsernamePopup()">Cancel</button>
-        </form>
-    </div>
+  <div class="popup-card">
+    <h3>Verify Password</h3>
+
+    <form id="usernameVerifyForm">
+      {% csrf_token %}
+      <input type="password" name="password" placeholder="Enter current password" required>
+      <div id="usernameVerifyError" style="color:red;font-size:13px;margin-top:8px;"></div>
+
+      <button type="submit" class="btn-outline">Verify</button>
+      <button type="button" class="btn-outline" onclick="closeUsernamePopup()">Cancel</button>
+    </form>
+  </div>
 </div>
+
 
 <!-- ================= EMAIL PASSWORD POPUP ================= -->
 <div id="emailPopup" class="popup-overlay">
-    <div class="popup-card">
-        <h3>Verify Password</h3>
-        <form method="POST" action="{% url 'verify_email_password' %}">
-            {% csrf_token %}
-            <input type="password" name="password"
-                   placeholder="Enter current password" required>
-            <button class="btn-outline">Verify</button>
-            <button type="button" class="btn-outline"
-                    onclick="closeEmailPopup()">Cancel</button>
-        </form>
-    </div>
+  <div class="popup-card">
+    <h3>Verify Password</h3>
+
+    <form id="emailVerifyForm">
+      {% csrf_token %}
+      <input type="password" name="password" placeholder="Enter current password" required>
+      <div id="emailVerifyError" style="color:red;font-size:13px;margin-top:8px;"></div>
+
+      <button type="submit" class="btn-outline">Verify</button>
+      <button type="button" class="btn-outline" onclick="closeEmailPopup()">Cancel</button>
+    </form>
+  </div>
 </div>
+
 
 <!-- ================= JS ================= -->
 <script>
 let editMode = false;
+
+function getCSRFToken() {
+  // Using the csrf token already rendered in the popup form
+  const tokenInput = document.querySelector('#usernameVerifyForm input[name="csrfmiddlewaretoken"]')
+                  || document.querySelector('#emailVerifyForm input[name="csrfmiddlewaretoken"]');
+  return tokenInput ? tokenInput.value : "";
+}
 
 function enableProfileEdit() {
     editMode = true;
@@ -165,6 +176,65 @@ function openEmailPopup() {
 function closeEmailPopup() {
     document.getElementById("emailPopup").style.display = "none";
 }
+
+document.getElementById("usernameVerifyForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const errorBox = document.getElementById("usernameVerifyError");
+  errorBox.textContent = "";
+
+  const res = await fetch("{% url 'verify_username_password' %}", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    closeUsernamePopup();
+
+    // ✅ unlock username field now
+    const usernameInput = document.getElementById("usernameInput");
+    usernameInput.removeAttribute("readonly");
+    usernameInput.focus();
+  } else {
+    errorBox.textContent = data.message || "Verification failed";
+  }
+});
+
+
+// Email verify (AJAX)
+document.getElementById("emailVerifyForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const errorBox = document.getElementById("emailVerifyError");
+  errorBox.textContent = "";
+
+  const res = await fetch("{% url 'verify_email_password' %}", {
+    method: "POST",
+    body: formData,
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    closeEmailPopup();
+
+    const emailInput = document.getElementById("emailInput");
+    emailInput.removeAttribute("readonly");
+    emailInput.classList.remove("readonly");
+    emailInput.focus();
+  } else {
+    errorBox.textContent = data.message || "Verification failed";
+  }
+});
+
 </script>
 
 </body>

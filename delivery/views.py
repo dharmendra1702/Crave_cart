@@ -664,6 +664,17 @@ def payment_success(request):
             item_image=image_url   # ✅ FIXED
         )
 
+    import traceback
+
+    try:
+        send_order_emails(order, request=request)
+        print("✅ Email function executed")
+    except Exception as e:
+        print("❌ Email failed:")
+        print(traceback.format_exc())
+
+
+
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
@@ -802,7 +813,7 @@ def rate_order(request, order_id):
     if order.status != "DELIVERED":
         return redirect("order_history")
 
-    order.rating = int(request.POST.get("rating"))
+    order.rating = Decimal(request.POST.get("rating"))
     order.review = request.POST.get("review", "")
     order.save()
 
@@ -867,17 +878,20 @@ def admin_order_detail(request, order_id):
 
 @require_POST
 def admin_update_order_status(request, order_id):
-    # 🔐 Admin check
     if request.session.get("username") != "admin":
         return redirect("signin")
 
     order = get_object_or_404(Order, id=order_id)
 
-    if request.method == "POST":
-        new_status = request.POST.get("status")
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.status = new_status
-            order.save()
+    new_status = request.POST.get("status")
+    if new_status in dict(Order.STATUS_CHOICES):
+        order.status = new_status
+
+        # ✅ set delivered time once
+        if new_status == "DELIVERED" and order.delivered_at is None:
+            order.delivered_at = timezone.now()
+
+        order.save()
 
     return redirect("admin_order_detail", order_id=order.id)
 
@@ -950,29 +964,39 @@ def profile_view(request):
     })
 
 
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect
+from .models import User, UserProfile
+
 @require_POST
 def update_profile(request):
     user = User.objects.get(username=request.session["username"])
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    # username update
-    new_username = request.POST.get("username")
+    # basic fields
+    user.first_name = request.POST.get("first_name", "").strip()
+    user.last_name  = request.POST.get("last_name", "").strip()
 
-    if User.objects.filter(username=new_username).exclude(id=user.id).exists():
-        return redirect("profile")
+    profile.gender = request.POST.get("gender", "").strip()
+    profile.date_of_birth = request.POST.get("date_of_birth") or None
 
-    user.username = new_username
-    user.first_name = request.POST.get("first_name")
-    user.last_name = request.POST.get("last_name")
+    # username (optional)
+    new_username = request.POST.get("username", "").strip()
+    if new_username and new_username != user.username:
+        if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+            return redirect("profile")
+        user.username = new_username
+        request.session["username"] = new_username
+
+    # ✅ email (optional)
+    new_email = request.POST.get("email", "").strip()
+    if new_email and new_email != user.email:
+        if User.objects.filter(email=new_email).exclude(id=user.id).exists():
+            return redirect("profile")
+        user.email = new_email
+
     user.save()
-
-    profile.gender = request.POST.get("gender")
-    profile.date_of_birth = request.POST.get("date_of_birth")
     profile.save()
-
-    # update session username
-    request.session["username"] = new_username
-
     return redirect("profile")
 
 
@@ -1027,22 +1051,17 @@ def update_profile_photo(request):
 
     return redirect("profile")
 
+
 @require_POST
 def verify_email_password(request):
     user = User.objects.get(username=request.session["username"])
     password = request.POST.get("password")
 
     if user.password != password:
-        return render(request, "profile.html", {
-            "error": "Incorrect password",
-            "user": user,
-            "profile": user.profile,
-            "extra_mobiles": user.extra_mobiles.all(),
-            "extra_addresses": user.extra_addresses.all(),
-        })
+        return JsonResponse({"success": False, "message": "Incorrect password"})
 
     request.session["email_pwd_verified"] = True
-    return redirect("profile")
+    return JsonResponse({"success": True})
 
 
 @require_POST
@@ -1064,38 +1083,15 @@ def update_email(request):
 
 
 @require_POST
-def update_profile(request):
-    user = User.objects.get(username=request.session["username"])
-    profile, _ = UserProfile.objects.get_or_create(user=user)
-
-    user.first_name = request.POST.get("first_name")
-    user.last_name = request.POST.get("last_name")
-    user.save()
-
-    profile.gender = request.POST.get("gender")
-    profile.date_of_birth = request.POST.get("date_of_birth")
-    profile.save()
-
-    return redirect("profile")
-
-
-@require_POST
 def verify_username_password(request):
     user = User.objects.get(username=request.session["username"])
     password = request.POST.get("password")
 
     if user.password != password:
-        return render(request, "profile.html", {
-            "user": user,
-            "profile": user.profile,
-            "extra_mobiles": user.extra_mobiles.all(),
-            "extra_addresses": user.extra_addresses.all(),
-            "username_error": "Incorrect password"
-        })
+        return JsonResponse({"success": False, "message": "Incorrect password"})
 
     request.session["username_pwd_verified"] = True
-    return redirect("profile")
-
+    return JsonResponse({"success": True})
 
 @require_POST
 def update_username(request):
@@ -1122,3 +1118,71 @@ def update_username(request):
     request.session.pop("username_pwd_verified")
 
     return redirect("profile")
+
+from decimal import Decimal
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+def send_order_emails(order, request=None):
+    # items fetch safely
+    items_manager = getattr(order, "items", None)
+    items_qs = items_manager.all() if items_manager else order.orderitem_set.all()
+
+    items = []
+    for i in items_qs:
+        line_total = (Decimal(str(i.price)) * int(i.quantity))
+        items.append({
+            "name": i.item_name,
+            "qty": i.quantity,
+            "price": i.price,
+            "line_total": line_total
+        })
+
+    context_common = {
+        "order_id": order.id,
+        "payment_id": order.payment_id,
+        "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p") if hasattr(order, "created_at") else timezone.now().strftime("%d %b %Y, %I:%M %p"),
+        "items": items,
+        "subtotal": order.subtotal,
+        "gst": order.gst_amount,
+        "delivery_fee": order.delivery_fee,
+        "coupon_code": order.coupon_code or "N/A",
+        "discount": order.coupon_discount,
+        "total": order.total_amount,
+        "year": timezone.now().year,
+        "site_url": (request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"),
+        "admin_url": (request.build_absolute_uri("/admin/") if request else "http://127.0.0.1:8000/admin/"),
+        "user_name": order.user.username,
+        "user_email": order.user.email,
+    }
+
+    # ---------- USER ----------
+    user_subject = f"Your Order #{order.id} is Placed ✅"
+    user_text = render_to_string("emails/user_order.txt", context_common)
+    user_html = render_to_string("emails/user_order.html", context_common)
+
+    if order.user.email:
+        msg_user = EmailMultiAlternatives(
+            subject=user_subject,
+            body=user_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[order.user.email],
+        )
+        msg_user.attach_alternative(user_html, "text/html")
+        msg_user.send()
+
+    # ---------- ADMIN ----------
+    admin_subject = f"New Order Received: #{order.id} 🚀"
+    admin_text = render_to_string("emails/admin_order.txt", context_common)
+    admin_html = render_to_string("emails/admin_order.html", context_common)
+
+    msg_admin = EmailMultiAlternatives(
+        subject=admin_subject,
+        body=admin_text,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.ADMIN_ORDER_EMAIL],
+    )
+    msg_admin.attach_alternative(admin_html, "text/html")
+    msg_admin.send()

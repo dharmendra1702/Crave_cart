@@ -1,11 +1,15 @@
-/* ================= THEME VARIABLES ================= */
-
 :root {
     --img-bg: #ffffff;
     --img-text: #111;
     --img-border: #dcdcdc;
     --img-btn-bg: #000;
     --img-btn-text: #fff;
+
+    --input-bg: #ffffff;
+    --input-text: #111;
+    --input-border: #dcdcdc;
+    --btn-bg: #000000;
+    --btn-text: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -14,9 +18,13 @@
     --img-border: #333;
     --img-btn-bg: #ffffff;
     --img-btn-text: #000000;
-}
 
-/* ================= PAGE LAYOUT ================= */
+    --input-bg: #1e1e1e;
+    --input-text: #f5f5f5;
+    --input-border: #333;
+    --btn-bg: #ffffff;
+    --btn-text: #000000;
+}
 
 .content {
     min-height: calc(100vh - 120px);
@@ -25,8 +33,6 @@
     align-items: center;
     padding: 40px 16px;
 }
-
-/* ================= CARD ================= */
 
 .auth-card {
     width: 100%;
@@ -42,8 +48,6 @@
 [data-theme="dark"] .auth-card {
     background: rgba(24,24,24,0.95);
 }
-
-/* ================= HEADINGS ================= */
 
 .auth-card h2 {
     text-align: center;
@@ -62,8 +66,6 @@
 [data-theme="dark"] .auth-subtitle {
     color: #bbb;
 }
-
-/* ================= FORM INPUTS ================= */
 
 .auth-card label {
     font-size: 14px;
@@ -90,8 +92,6 @@
     border-color: #000;
 }
 
-/* ================= IMAGE URL + UPLOAD ================= */
-
 .image-combo {
     display: flex;
     width: 100%;
@@ -99,24 +99,26 @@
 }
 
 .image-combo input[type="text"] {
-    flex: 1;
     height: 46px;
     padding: 0 14px;
-    font-size: 14px;
     background: var(--img-bg);
     color: var(--img-text);
     border: 1px solid var(--img-border);
+    outline: none;
+    padding: 12px;
+    border: 1px solid #ddd;
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    font-size: 14px;
+    flex: 1;
+    background: var(--input-bg);
     border-right: none;
     border-radius: 10px 0 0 10px;
-    outline: none;
 }
 
 .image-combo input::placeholder {
     color: #888;
 }
-
-
-/* ================= CLEAR BUTTON ================= */
 
 .clear-btn {
     position: absolute;
@@ -133,15 +135,11 @@
     color: #ff4d4d;
 }
 
-/* ================= FILE NAME ================= */
-
 .file-name {
     font-size: 13px;
     margin-top: 6px;
     color: #888;
 }
-
-/* ================= IMAGE PREVIEW ================= */
 
 .image-preview {
     margin-top: 12px;
@@ -154,8 +152,6 @@
     border-radius: 10px;
     border: 1px solid var(--input-border);
 }
-
-/* ================= BUTTONS ================= */
 
 .btn.primary {
     width: 100%;
@@ -194,8 +190,6 @@
     border-color: #333;
 }
 
-/* ================= SMOOTH TRANSITIONS ================= */
-
 .image-combo input,
 .upload-btn,
 .image-preview img {
@@ -203,8 +197,6 @@
                 color 0.25s ease,
                 border-color 0.25s ease;
 }
-
-/* ================= ANIMATION ================= */
 
 @keyframes fadeUp {
     from {
@@ -218,88 +210,24 @@
 }
 
 
-
-.image-combo {
-    display: flex;
-    width: 100%;
-}
-
-.image-combo input[type="text"] {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-right: none;               /* 👈 join */
-    border-radius: 10px 0 0 10px;     /* 👈 left rounded */
-    font-size: 14px;
-}
-
 .upload-btn {
-    padding: 12px 18px;
     background: #000;
     color: #fff;
-    cursor: pointer;
-    border-radius: 0 10px 10px 0;     /* 👈 right rounded */
     font-size: 14px;
     display: flex;
     align-items: center;
-}
-
-.upload-btn:hover {
-    background: #222;
-}
-
-.image-combo {
-    display: flex;
-    width: 100%;
-}
-
-.image-combo input[type="text"] {
-    flex: 1;
-    padding: 12px;
-    background: var(--input-bg);
-    color: var(--input-text);
-    border: 1px solid var(--input-border);
-    border-right: none;
-    border-radius: 10px 0 0 10px;
-    font-size: 14px;
-    outline: none;
-}
-
-.image-combo input::placeholder {
-    color: #888;
-}
-
-.upload-btn {
     padding: 12px 18px;
     background: var(--btn-bg);
     color: var(--btn-text);
     cursor: pointer;
     border-radius: 0 10px 10px 0;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
     border: 1px solid var(--input-border);
     border-left: none;
 }
 
 .upload-btn:hover {
+    background: #222;
     opacity: 0.85;
-}
-
-:root {
-    --input-bg: #ffffff;
-    --input-text: #111;
-    --input-border: #dcdcdc;
-    --btn-bg: #000000;
-    --btn-text: #ffffff;
-}
-
-[data-theme="dark"] {
-    --input-bg: #1e1e1e;
-    --input-text: #f5f5f5;
-    --input-border: #333;
-    --btn-bg: #ffffff;
-    --btn-text: #000000;
 }
 
 /* Smooth transitions */
@@ -308,52 +236,3 @@
                 color 0.25s ease,
                 border-color 0.25s ease;
 }
-
-.image-combo {
-    display: flex;
-    width: 100%;
-}
-
-.image-combo input[type="text"] {
-    flex: 1;
-    padding: 12px;
-    background: var(--input-bg);
-    color: var(--input-text);
-    border: 1px solid var(--input-border);
-    border-right: none;
-    border-radius: 10px 0 0 10px;
-    outline: none;
-}
-
-.upload-btn {
-    padding: 12px 18px;
-    background: var(--btn-bg);
-    color: var(--btn-text);
-    cursor: pointer;
-    border-radius: 0 10px 10px 0;
-    border: 1px solid var(--input-border);
-    border-left: none;
-}
-
-.upload-btn:hover {
-    opacity: 0.85;
-}
-
-.file-name {
-    font-size: 13px;
-    margin-top: 6px;
-    color: #888;
-}
-
-.image-preview {
-    margin-top: 12px;
-    display: none;
-}
-
-.image-preview img {
-    max-width: 100%;
-    max-height: 220px;
-    border-radius: 10px;
-    border: 1px solid var(--input-border);
-}
-
