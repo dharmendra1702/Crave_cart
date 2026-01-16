@@ -212,6 +212,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # ✅ collectstatic will also pick app static (delivery/static/...)
 # ✅ this also makes caching safe in production
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # If you ever have a global "static/" folder at project root, add it here.
