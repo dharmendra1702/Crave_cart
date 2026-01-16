@@ -1374,12 +1374,16 @@ def send_order_emails(order, request=None):
         msg_admin.attach_alternative(admin_html, "text/html")
 
         try:
-            msg_admin.send(fail_silently=False)
-            logger.info("ADMIN mail sent order_id=%s to=%s", order.id, admin_email)
+            msg_user.send(fail_silently=False)
+            logger.info("USER email sent order_id=%s to=%s", order.id, order.user.email)
         except Exception:
-            logger.exception("ADMIN mail failed order_id=%s to=%s", order.id, admin_email)
-    else:
-        logger.warning("ADMIN_ORDER_EMAIL not set; skipping ADMIN mail. order_id=%s", order.id)
+            logger.exception("USER mail failed order_id=%s to=%s", order.id, order.user.email)
+
+        try:
+            msg_admin.send(fail_silently=False)
+            logger.info("ADMIN email sent order_id=%s to=%s", order.id, settings.ADMIN_ORDER_EMAIL)
+        except Exception:
+            logger.exception("ADMIN mail failed order_id=%s to=%s", order.id, settings.ADMIN_ORDER_EMAIL)
 
 
 
