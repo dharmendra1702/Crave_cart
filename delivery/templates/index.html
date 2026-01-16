@@ -44,24 +44,6 @@
         <span class="icon" id="themeIcon">🌙</span>
     </button>
 
-
-
-    <!-- CART (BETWEEN THEME & PROFILE) -->
-    {% if request.session.username %}
-        <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
-            <span class="cart-icon-box">
-                <img
-                    id="cartIcon"
-                    alt="Cart"
-                >
-                {% if cart_count and cart_count > 0 %}
-                    <span class="cart-count">{{ cart_count }}</span>
-                {% endif %}
-            </span>
-        </a>
-    {% endif %}
-
-
     <!-- PROFILE -->
     <div class="profile-menu">
         <button class="profile-avatar" onclick="toggleProfileMenu(event)">
@@ -95,9 +77,8 @@
             <div class="dropdown-divider"></div>
 
             <!-- MENU -->
-                <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
-                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
-                <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
+                <a href="{% url 'open_signin' %}" class="dropdown-item">🔐 Sign In</a>
+                <a href="{% url 'open_signup' %}" class="dropdown-item">📝 Sign Up</a>
 
             <div class="dropdown-divider"></div>
 
