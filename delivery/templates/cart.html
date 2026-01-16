@@ -453,18 +453,23 @@ body[data-theme="dark"] .logout-modal {
 <body>
 
 <!-- ================= HEADER ================= -->
-<header class="header">
-    <div class="brand">
-        <a href="{% url 'home' %}" class="logo-link">
-            <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
-        </a>
-    </div>
+<!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
 
-    <div class="header-actions">
-        <button class="icon-btn" title="Help"><span class="icon">❓</span></button>
-        <!-- THEME TOGGLE -->
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        <span class="icon">❓</span>
+    </button>
+
+    <!-- THEME TOGGLE -->
     <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-        <span id="themeIcon", class = "icon">🌙</span>
+        <span class="icon" id="themeIcon">🌙</span>
     </button>
 
 
@@ -485,31 +490,55 @@ body[data-theme="dark"] .logout-modal {
     {% endif %}
 
 
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <span class="icon">
+                <img
+                src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                alt="Profile"
+                class="nav-avatar-img"
+                >
 
-        <div class="profile-menu">
-            <button class="profile-avatar" onclick="toggleProfileMenu(event)">
-                <img src="{% static 'images/profile.png' %}" alt="Profile">
-            </button>
+            </span>
+        </button>
 
-            <div class="profile-dropdown" id="profileDropdown">
-                <div class="profile-header">
-                    <img src="{% static 'images/profile.png' %}" class="profile-pic">
-                    <strong>{{ username|capfirst }}</strong>
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img
+                    src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                    class="profile-pic"
+                    alt="User"
+                >
+                <div class="profile-meta">
+                    <strong class="profile-name">{{ nav_user.username|capfirst }}</strong>
+                </div>
                 </div>
 
-                <div class="dropdown-divider"></div>
 
-                <a href="#" class="dropdown-item">👤 My Profile</a>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
+                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
                 <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
-                <div class="dropdown-divider"></div>
 
-                <a href="javascript:void(0)"
-                   class="dropdown-item logout"
-                   onclick="openLogoutModal()">🚪 Log Out</a>
-            </div>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+
         </div>
     </div>
-</header>
+</div>
+    </header>
 
 <main class="page-content">
 {% if cart_items %}

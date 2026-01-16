@@ -148,6 +148,22 @@ class Order(models.Model):
 
         super().save(*args, **kwargs)
 
+    payment_method = models.CharField(
+        max_length=10,
+        choices=[("ONLINE", "Online"), ("COD", "Cash on Delivery")],
+        default="ONLINE"
+    )
+    payment_status = models.CharField(
+        max_length=20,
+        choices=[("PAID", "Paid"), ("PENDING", "Pending")],
+        default="PAID"
+    )
+
+    delivery_address_label = models.CharField(max_length=50, blank=True, null=True)
+    delivery_address = models.TextField(blank=True, null=True)
+
+
+
 
 
 class OrderItem(models.Model):
@@ -184,28 +200,24 @@ class UserProfile(models.Model):
 
 
 class UserExtraMobile(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="extra_mobiles"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="extra_mobiles")
     mobile = models.CharField(max_length=15)
+    is_primary = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)  # optional UI
 
     def __str__(self):
         return self.mobile
 
 
 class UserExtraAddress(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="extra_addresses"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="extra_addresses")
     label = models.CharField(max_length=20)
     address = models.TextField()
+    is_default = models.BooleanField(default=False)
 
     def __str__(self):
         return self.label
+
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator

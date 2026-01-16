@@ -49,7 +49,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
     padding: 18px 40px;
     position: relative;
@@ -631,9 +630,9 @@ body[data-theme="dark"] .logout-modal {
 }
 
 .restaurant-row {
-    box-shadow:
+    /* box-shadow:
         0 10px 25px rgba(0,0,0,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+        inset 0 1px 0 rgba(255,255,255,0.6); */
     margin-left: auto;
     margin-right: auto;
     width: 100%;
@@ -644,11 +643,11 @@ body[data-theme="dark"] .logout-modal {
     align-items: center;
     padding: 22px 30px;
     border-radius: 22px;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    /* background: rgba(255, 255, 255, 0.75); */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(6px);
+    /* border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease; */
 }
 
 body[data-theme="dark"] .restaurant-row {
@@ -1001,7 +1000,7 @@ body[data-theme="dark"] .menu-row {
 .qty-count {
     font-weight: 600;
     font-size: 16px;
-    color: #000000;
+    color: #ffffff;
 }
 
 .hidden {
@@ -1203,4 +1202,46 @@ body[data-theme="dark"] .dropdown-divider {
 
 body[data-theme="dark"] .qty-count {
     color: #ffffff;
+}
+body[data-theme="dark"] .qty-count {
+    color: #ffffff;
+}
+
+/* navbar avatar image */
+.nav-avatar-img{
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* dropdown user header */
+.profile-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+}
+
+.profile-pic{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.profile-meta{
+  display:flex;
+  flex-direction:column;
+  line-height:1.2;
+}
+
+.profile-name{
+  font-size:16px;
+  font-weight:800;
+}
+
+.profile-username{
+  font-size:13px;
+  color:#666;
 }

@@ -36,52 +36,59 @@ def open_signup(request):
     return render(request, 'signup.html')
 
 def signup(request):
-     #Go to sign up page and save user details
     if request.method == "POST":
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        password = request.POST.get('password')
-        email = request.POST.get('email')
-        mobile = request.POST.get('mobile')
-        address = request.POST.get('address')
-        
+        username   = (request.POST.get('username') or "").strip()
+        first_name = (request.POST.get('first_name') or "").strip()
+        last_name  = (request.POST.get('last_name') or "").strip()
+        password   = (request.POST.get('password') or "").strip()
+        email      = (request.POST.get('email') or "").strip()
+        mobile     = (request.POST.get('mobile') or "").strip()
+        address    = (request.POST.get('address') or "").strip()
+
+        # Basic validation
+        if not all([username, first_name, last_name, password, email, mobile, address]):
+            return render(request, "signup.html", {"error": "All fields are required"})
+
         # Check username exists
         if User.objects.filter(username=username).exists():
-            return render(request, "signup.html", {
-                "error": "Username already exists"
-            })
+            return render(request, "signup.html", {"error": "Username already exists"})
 
         # Check email exists
         if User.objects.filter(email=email).exists():
-            return render(request, "signup.html", {
-                "error": "Email address already exists"
-            })
-        
-        # saving user details
-        user = User(username=username, password=password, email=email, mobile=mobile, address=address)
+            return render(request, "signup.html", {"error": "Email address already exists"})
+
+        # ✅ saving user details properly
+        user = User(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,
+            email=email,
+            mobile=mobile,
+            address=address
+        )
         user.save()
 
-        # Redirect to signin page after successful signup
-        return render(request, 'signin.html')
-    else:
-        return HttpResponse("Invalid response.")
+        # ✅ Redirect properly
+        return redirect("open_signin")
+
+    return render(request, "signup.html")
+
     
 
 import hashlib
 def signin(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = (request.POST.get("username") or "").strip()
+        password = (request.POST.get("password") or "").strip()
 
         user = User.objects.filter(username=username, password=password).first()
 
         if not user:
-            return render(request, "signin.html", {
-                "error": "Invalid username or password"
-            })
+            return render(request, "signin.html", {"error": "Invalid username or password"})
 
         request.session["username"] = user.username
+        request.session.modified = True
 
         if user.username.lower() == "admin":
             return redirect("admin_dashboard")
@@ -548,8 +555,9 @@ def toggle_coupon(request, cid):
     coupon.save()
     return redirect("create_coupon")
 
-import razorpay
 from django.conf import settings
+from decimal import Decimal
+import razorpay
 
 def checkout(request):
     username = request.session.get("username")
@@ -560,17 +568,21 @@ def checkout(request):
         return HttpResponse("Razorpay keys not configured", status=500)
 
     user = User.objects.get(username=username)
-    cart = Cart.objects.get(username=username)
+
+    cart = Cart.objects.filter(username=username).first()
+    if not cart:
+        return redirect("view_cart")
 
     totals = calculate_cart_totals(request, cart)
 
-    client = razorpay.Client(auth=(
-        settings.RAZORPAY_KEY_ID,
-        settings.RAZORPAY_KEY_SECRET
-    ))
+    # ✅ addresses from profile model
+    addresses = UserExtraAddress.objects.filter(user=user).order_by("-is_default", "-id")
+    default_addr = addresses.filter(is_default=True).first()
+    default_address_id = default_addr.id if default_addr else None
 
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
     razorpay_order = client.order.create({
-        "amount": int(totals["grand_total"] * 100),
+        "amount": int(Decimal(str(totals["grand_total"])) * 100),
         "currency": "INR",
         "payment_capture": 1
     })
@@ -580,80 +592,82 @@ def checkout(request):
     return render(request, "checkout.html", {
         "customer": user,
         "cart_items": CartItem.objects.filter(cart=cart),
+        "addresses": addresses,                 # ✅ added
+        "default_address_id": default_address_id,  # ✅ added
         **totals,
         "razorpay_key_id": settings.RAZORPAY_KEY_ID,
         "order_id": razorpay_order["id"],
     })
 
-    cart = Cart.objects.filter(username=username).first()
-    if not cart:
-        return redirect("view_cart")
 
 
+import threading, traceback
+from decimal import Decimal
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 @require_POST
 def payment_success(request):
     username = request.session.get("username")
     if not username:
-        return redirect("signin")
+        return JsonResponse({"error": "Login required"}, status=401)
 
     user = User.objects.get(username=username)
     cart = Cart.objects.get(username=username)
-
-    data = json.loads(request.body)
+    data = json.loads(request.body or "{}")
 
     if data.get("razorpay_order_id") != request.session.get("razorpay_order_id"):
         return JsonResponse({"error": "Order mismatch"}, status=400)
 
     totals = calculate_cart_totals(request, cart)
 
-    applied_coupon = request.session.get("applied_coupon")
+    # ✅ selected address snapshot
+    address_id = request.session.get("selected_address_id")
+    addr = UserExtraAddress.objects.filter(id=address_id, user=user).first() if address_id else None
 
+    applied_coupon = request.session.get("applied_coupon")
     discount_amount = Decimal("0.00")
     coupon_code = None
-
     if applied_coupon:
         coupon_code = applied_coupon["code"]
         discount_amount = Decimal(str(applied_coupon["discount"]))
 
-
     order = Order.objects.create(
-    user=user,
-    subtotal=totals["product_total"],
-    gst_amount=totals["gst"],
-    delivery_fee=totals["delivery_fee"],
-    coupon_code=coupon_code,                # ✅ STRING ONLY
-    coupon_discount=discount_amount,        # ✅ DECIMAL
-    total_amount=totals["grand_total"],
-    payment_id=data.get("razorpay_payment_id")
-)
-    # ✅ INCREMENT COUPON USAGE
+        user=user,
+        subtotal=float(totals["product_total"]),
+        gst_amount=float(totals["gst"]),
+        delivery_fee=float(totals["delivery_fee"]),
+        coupon_code=coupon_code,
+        coupon_discount=float(discount_amount),
+        total_amount=float(totals["grand_total"]),
+
+        payment_id=data.get("razorpay_payment_id"),
+        payment_method="ONLINE",
+        payment_status="PAID",
+
+        delivery_address_label=(addr.label if addr else None),
+        delivery_address=(addr.address if addr else None),
+    )
+
+    # ✅ coupon usage
     if coupon_code:
         coupon = Coupon.objects.get(code=coupon_code)
         coupon.used_count += 1
-
         if coupon.used_count >= coupon.usage_limit:
             coupon.is_active = False
-
         coupon.save()
 
-
-    coupon_data = request.session.get("applied_coupon")
-    coupon_discount = Decimal("0.00")
-
-    if coupon_data:
-        coupon_discount = Decimal(str(coupon_data["discount"]))
-
+    # ✅ order items
     for ci in CartItem.objects.filter(cart=cart):
-
-        item = ci.item   # ✅ CORRECT
+        item = ci.item
 
         image_url = None
-
-        # Priority: Cloudinary > URL
-        if item.picture_file:
-            image_url = item.picture_file.url
-        elif item.picture:
+        try:
+            if item.picture_file:
+                image_url = item.picture_file.url
+        except:
+            image_url = None
+        if not image_url and item.picture:
             image_url = item.picture
 
         OrderItem.objects.create(
@@ -661,38 +675,30 @@ def payment_success(request):
             item_name=item.name,
             price=item.price,
             quantity=ci.quantity,
-            item_image=image_url   # ✅ FIXED
+            item_image=image_url
         )
 
-    import traceback
-
-    try:
-        send_order_emails(order, request=request)
-        print("✅ Email function executed")
-    except Exception as e:
-        print("❌ Email failed:")
-        print(traceback.format_exc())
-
-
-
+    # ✅ clear cart
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
+    # ✅ clear session
     request.session.pop("applied_coupon", None)
     request.session.pop("checkout_data", None)
     request.session.pop("razorpay_order_id", None)
+    request.session.pop("selected_address_id", None)
+    request.session.pop("pay_method", None)
+
+    # ✅ async emails
+    def _send():
+        try:
+            send_order_emails(order, request=request)
+        except Exception:
+            print("❌ Email failed:\n", traceback.format_exc())
+
+    threading.Thread(target=_send, daemon=True).start()
 
     return JsonResponse({"success": True})
-
-    cart = Cart.objects.filter(username=username).first()
-    if not cart:
-        return redirect("view_cart")
-    
-    request.session.pop("applied_coupon", None)
-    request.session.pop("razorpay_order_id", None)
-
-
-
 
 
 def order_success(request):
@@ -754,9 +760,17 @@ def calculate_cart_totals(request, cart):
 @require_POST
 def cancel_order(request, order_id):
     order = Order.objects.get(id=order_id, user__username=request.session["username"])
+
     if order.status == "PLACED":
         order.status = "CANCELLED"
         order.save()
+
+        threading.Thread(
+            target=send_order_status_email,
+            args=(order, "CANCELLED", request),
+            daemon=True
+        ).start()
+
     return redirect("order_history")
 
 
@@ -883,15 +897,27 @@ def admin_update_order_status(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
 
+    old_status = order.status
     new_status = request.POST.get("status")
-    if new_status in dict(Order.STATUS_CHOICES):
+
+    if new_status in dict(Order.STATUS_CHOICES) and new_status != old_status:
         order.status = new_status
 
-        # ✅ set delivered time once
+        # set delivered time once
         if new_status == "DELIVERED" and order.delivered_at is None:
             order.delivered_at = timezone.now()
 
+        if new_status == "DELIVERED" and order.payment_method == "COD":
+            order.payment_status = "PAID"
+
         order.save()
+
+        # ✅ send mail async (fast redirect)
+        threading.Thread(
+            target=send_order_status_email,
+            args=(order, new_status, request),
+            daemon=True
+        ).start()
 
     return redirect("admin_order_detail", order_id=order.id)
 
@@ -906,6 +932,10 @@ def update_order_status(request, order_id):
         # ✅ SET DELIVERY TIME ONLY ONCE
         if new_status == "DELIVERED" and order.delivered_at is None:
             order.delivered_at = timezone.now()
+        
+        if new_status == "DELIVERED" and order.payment_method == "COD":
+            order.payment_status = "PAID"
+
 
         order.save()
         return redirect("admin_order_detail", order_id=order.id)
@@ -932,14 +962,120 @@ def admin_ratings_dashboard(request):
         "data": data
     })
 
+from django.db.models import Sum
+
 def order_history(request):
-    user = User.objects.get(username=request.session["username"])
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
+
+    user = User.objects.get(username=username)
+    nav_profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # cart count for header badge
+    cart = Cart.objects.filter(username=username).first()
+    cart_count = 0
+    if cart:
+        cart_count = CartItem.objects.filter(cart=cart).aggregate(
+            total=Sum("quantity")
+        )["total"] or 0
 
     orders = Order.objects.filter(user=user).order_by("-created_at")
 
     return render(request, "order_history.html", {
-        "orders": orders
+        "orders": orders,
+        "nav_user": user,
+        "nav_profile": nav_profile,
+        "cart_count": cart_count,
     })
+
+from decimal import Decimal
+from django.shortcuts import redirect
+
+def place_cod_order(request):
+    username = request.session.get("username")
+    if not username:
+        return redirect("signin")
+
+    user = User.objects.get(username=username)
+    cart = Cart.objects.filter(username=username).first()
+    if not cart:
+        return redirect("view_cart")
+
+    address_id = request.session.get("selected_address_id")
+    if not address_id:
+        return redirect("checkout")
+
+    addr = UserExtraAddress.objects.filter(id=address_id, user=user).first()
+    if not addr:
+        return redirect("checkout")
+
+    totals = calculate_cart_totals(request, cart)
+
+    applied_coupon = request.session.get("applied_coupon")
+    discount_amount = Decimal("0.00")
+    coupon_code = None
+    if applied_coupon:
+        coupon_code = applied_coupon["code"]
+        discount_amount = Decimal(str(applied_coupon["discount"]))
+
+    order = Order.objects.create(
+        user=user,
+        subtotal=float(totals["product_total"]),
+        gst_amount=float(totals["gst"]),
+        delivery_fee=float(totals["delivery_fee"]),
+        coupon_code=coupon_code,
+        coupon_discount=float(discount_amount),
+        total_amount=float(totals["grand_total"]),
+
+        payment_id="COD",
+        payment_method="COD",
+        payment_status="PENDING",
+
+        delivery_address_label=addr.label,
+        delivery_address=addr.address,
+
+        status="PLACED",
+    )
+
+    for ci in CartItem.objects.filter(cart=cart):
+        item = ci.item
+
+        image_url = None
+        try:
+            if item.picture_file:
+                image_url = item.picture_file.url
+        except:
+            image_url = None
+        if not image_url and item.picture:
+            image_url = item.picture
+
+        OrderItem.objects.create(
+            order=order,
+            item_name=item.name,
+            price=item.price,
+            quantity=ci.quantity,
+            item_image=image_url
+        )
+
+    if coupon_code:
+        coupon = Coupon.objects.get(code=coupon_code)
+        coupon.used_count += 1
+        if coupon.used_count >= coupon.usage_limit:
+            coupon.is_active = False
+        coupon.save()
+
+    CartItem.objects.filter(cart=cart).delete()
+    cart.delete()
+
+    request.session.pop("applied_coupon", None)
+    request.session.pop("razorpay_order_id", None)
+    request.session.pop("selected_address_id", None)
+    request.session.pop("pay_method", None)
+
+    return redirect("order_history")
+
+
 
 
 
@@ -949,19 +1085,23 @@ def profile_view(request):
         return redirect("signin")
 
     user = User.objects.get(username=username)
-
-    # ✅ FIX: always ensure profile exists
     profile, created = UserProfile.objects.get_or_create(user=user)
 
-    extra_mobiles = user.extra_mobiles.all()
-    extra_addresses = user.extra_addresses.all()
+    extra_mobiles = user.extra_mobiles.all().order_by("-is_primary", "-id")
+    extra_addresses = user.extra_addresses.all().order_by("-is_default", "-id")
+
+    # ✅ pick primary from extra mobiles, else fallback to user.mobile
+    primary_extra = extra_mobiles.filter(is_primary=True).first()
+    primary_mobile = primary_extra.mobile if primary_extra else user.mobile
 
     return render(request, "profile.html", {
         "user": user,
         "profile": profile,
         "extra_mobiles": extra_mobiles,
         "extra_addresses": extra_addresses,
+        "primary_mobile": primary_mobile,   # ✅ send to template
     })
+
 
 
 from django.views.decorators.http import require_POST
@@ -999,24 +1139,37 @@ def update_profile(request):
     profile.save()
     return redirect("profile")
 
+import re
+
+MOBILE_10_RE = re.compile(r"^[6-9]\d{9}$")
 
 @require_POST
 def add_extra_mobile(request):
-    username = request.session.get("username")
-    user = User.objects.get(username=username)
+    user = User.objects.get(username=request.session["username"])
+    mobile = (request.POST.get("mobile") or "").strip()
 
-    mobile = request.POST.get("mobile")
-    if mobile:
-        m = UserExtraMobile.objects.create(user=user, mobile=mobile)
-        return JsonResponse({"id": m.id, "mobile": m.mobile})
+    if not MOBILE_10_RE.match(mobile):
+        return JsonResponse({"error": "Invalid mobile. Enter 10 digits (starts with 6-9)."}, status=400)
 
-    return JsonResponse({"error": "Invalid mobile"}, status=400)
+    # prevent duplicates
+    if UserExtraMobile.objects.filter(user=user, mobile=mobile).exists():
+        return JsonResponse({"error": "This mobile number already exists"}, status=400)
+
+    make_primary = not UserExtraMobile.objects.filter(user=user, is_primary=True).exists()
+
+    m = UserExtraMobile.objects.create(
+        user=user,
+        mobile=mobile,
+        is_primary=make_primary
+    )
+    return JsonResponse({"id": m.id, "mobile": m.mobile, "is_primary": m.is_primary})
 
 
-@require_POST
-def delete_extra_mobile(request, mid):
-    UserExtraMobile.objects.filter(id=mid).delete()
-    return JsonResponse({"success": True})
+
+# @require_POST
+# def delete_extra_mobile(request, mid):
+#     UserExtraMobile.objects.filter(id=mid).delete()
+#     return JsonResponse({"success": True})
 
 @require_POST
 def add_extra_address(request):
@@ -1186,3 +1339,127 @@ def send_order_emails(order, request=None):
     )
     msg_admin.attach_alternative(admin_html, "text/html")
     msg_admin.send()
+
+
+def send_order_status_email(order, new_status, request=None):
+    # status label (human readable)
+    status_label = dict(order.STATUS_CHOICES).get(new_status, new_status)
+
+    context = {
+        "order_id": order.id,
+        "status": new_status,
+        "status_label": status_label,
+        "updated_at": timezone.localtime(timezone.now()).strftime("%d %b %Y, %I:%M %p"),
+        "user_name": order.user.username,
+        "year": timezone.now().year,
+        "site_url": (request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"),
+    }
+
+    subject_map = {
+        "PLACED": f"Order #{order.id} Placed ✅",
+        "PREPARING": f"Order #{order.id} is Being Prepared 🍳",
+        "OUT_FOR_DELIVERY": f"Order #{order.id} is Out for Delivery 🛵",
+        "DELIVERED": f"Order #{order.id} Delivered ✅",
+        "CANCELLED": f"Order #{order.id} Cancelled ❌",
+    }
+    subject = subject_map.get(new_status, f"Order #{order.id} Update: {status_label}")
+
+    text_body = render_to_string("emails/order_status.txt", context)
+    html_body = render_to_string("emails/order_status.html", context)
+
+    if order.user.email:
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[order.user.email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=True)
+
+@require_POST
+def delete_extra_mobile(request, mid):
+    user = User.objects.get(username=request.session["username"])
+    UserExtraMobile.objects.filter(id=mid, user=user).delete()
+    return JsonResponse({"success": True})
+
+@require_POST
+def delete_extra_address(request, aid):
+    user = User.objects.get(username=request.session["username"])
+    UserExtraAddress.objects.filter(id=aid, user=user).delete()
+    return JsonResponse({"success": True})
+
+
+from django.db import transaction
+
+@require_POST
+def make_primary_mobile(request, mid):
+    user = User.objects.get(username=request.session["username"])
+
+    with transaction.atomic():
+        # set all false first
+        UserExtraMobile.objects.filter(user=user).update(is_primary=False)
+        # set selected true
+        UserExtraMobile.objects.filter(user=user, id=mid).update(is_primary=True)
+
+    return JsonResponse({"success": True})
+
+
+@require_POST
+def make_default_address(request, aid):
+    user = User.objects.get(username=request.session["username"])
+
+    with transaction.atomic():
+        UserExtraAddress.objects.filter(user=user).update(is_default=False)
+        UserExtraAddress.objects.filter(user=user, id=aid).update(is_default=True)
+
+    return JsonResponse({"success": True})
+
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+@require_POST
+def add_address_ajax(request):
+    data = json.loads(request.body or "{}")
+    # validate minimally
+    required = ["name","mobile","house_no","area","city","state","pincode"]
+    if not all(data.get(k) for k in required):
+        return JsonResponse({"ok": False, "error": "All address fields are required"})
+
+    # create address model (change model/fields as per your project)
+    addr = UserExtraAddress.objects.create(
+        user=request.user,   # or your session user mapping
+        name=data["name"],
+        mobile=data["mobile"],
+        house_no=data["house_no"],
+        area=data["area"],
+        city=data["city"],
+        state=data["state"],
+        pincode=data["pincode"],
+    )
+    return JsonResponse({"ok": True, "id": addr.id})
+
+@require_POST
+def set_checkout_selection(request):
+    username = request.session.get("username")
+    if not username:
+        return JsonResponse({"ok": False, "error": "Login required"}, status=401)
+
+    user = User.objects.get(username=username)
+    data = json.loads(request.body or "{}")
+
+    address_id = data.get("address_id")
+    pay_method = data.get("pay_method")
+
+    if pay_method not in ["ONLINE", "COD"]:
+        return JsonResponse({"ok": False, "error": "Invalid payment method"})
+
+    if not UserExtraAddress.objects.filter(id=address_id, user=user).exists():
+        return JsonResponse({"ok": False, "error": "Invalid address"})
+
+    request.session["selected_address_id"] = int(address_id)
+    request.session["pay_method"] = pay_method
+    return JsonResponse({"ok": True})

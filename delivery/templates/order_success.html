@@ -129,6 +129,93 @@
 
 <body>
 
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        <span class="icon">❓</span>
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span class="icon" id="themeIcon">🌙</span>
+    </button>
+
+
+
+    <!-- CART (BETWEEN THEME & PROFILE) -->
+    {% if request.session.username %}
+        <a href="{% url 'view_cart' %}" class="icon-btn cart-btn" title="Cart">
+            <span class="cart-icon-box">
+                <img
+                    id="cartIcon"
+                    alt="Cart"
+                >
+                {% if cart_count and cart_count > 0 %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </span>
+        </a>
+    {% endif %}
+
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <span class="icon">
+                <img
+                src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                alt="Profile"
+                class="nav-avatar-img"
+                >
+
+            </span>
+        </button>
+
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img
+                    src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                    class="profile-pic"
+                    alt="User"
+                >
+                <div class="profile-meta">
+                    <strong class="profile-name">{{ nav_user.username|capfirst }}</strong>
+                </div>
+                </div>
+
+
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
+                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
+                <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
+
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+
+        </div>
+    </div>
+</div>
+    </header>
+
 <div class="success-container">
     <div class="success-icon">✔</div>
 

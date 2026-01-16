@@ -267,6 +267,21 @@ header.header {
       </div>
     </div>
 
+    <div class="section">
+      <h3>Delivery & Payment</h3>
+
+      <div class="meta">
+        <b>Address:</b>
+        {{ order.delivery_address_label|default:"" }}
+        {% if order.delivery_address %} - {{ order.delivery_address }}{% endif %}
+        <br>
+
+        <b>Payment:</b>
+        {{ order.payment_method }} • {{ order.payment_status }}
+      </div>
+    </div>
+
+
     <!-- STATUS UPDATE -->
     <div class="section">
       <h3>Update Order Status</h3>

@@ -1078,11 +1078,11 @@ body[data-theme="dark"] .logout-modal {
     padding: 18px 22px;
     border-radius: 18px;
 
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(14px);
+    /* background: rgba(255, 255, 255, 0.55); */
+    backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(14px);
 
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    /* border: 1px solid rgba(255, 255, 255, 0.35); */
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1369,12 +1369,12 @@ body[data-theme="dark"] .dropdown-item:hover {
 
 /* Restaurant card refinement */
 .restaurant-row {
-    background: rgba(255,255,255,0.72);
+    /* background: rgba(255,255,255,0.72); */
     border-radius: 20px;
     padding: 20px 26px;
-    box-shadow:
+    /* box-shadow:
         0 10px 25px rgba(0,0,0,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+        inset 0 1px 0 rgba(255,255,255,0.6); */
 }
 
 /* Dark theme card */

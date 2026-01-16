@@ -185,24 +185,182 @@ body[data-theme="dark"] {
     margin: 16px auto 0;
 }
 
+
+.section-box{
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255,255,255,0.55);
+}
+
+body[data-theme="dark"] .section-box{
+  background: rgba(0,0,0,0.25);
+}
+
+.section-title{
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.cart-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.cart-thumb{
+  width:54px;
+  height:54px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid var(--border-soft);
+}
+
+.cart-meta .cart-name{
+  font-weight: 700;
+}
+
+.cart-meta .cart-qty{
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cart-price{
+  font-weight: 800;
+}
+
+.address-list{
+  display: grid;
+  gap: 12px;
+}
+
+.address-card, .pay-card{
+  display:flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  align-items: flex-start;
+  background: rgba(255,255,255,0.65);
+}
+
+body[data-theme="dark"] .address-card,
+body[data-theme="dark"] .pay-card{
+  background: rgba(0,0,0,0.25);
+}
+
+.address-card input, .pay-card input{
+  margin-top: 3px;
+  transform: scale(1.1);
+}
+
+.addr-line{
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.empty-note{
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.add-address{
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-soft);
+}
+
+.add-address h4{
+  margin: 0 0 10px;
+  color: var(--text-main);
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.grid-2 input{
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  outline: none;
+}
+
+.mini-btn{
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
+
+.hint{
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pay-title{
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.pay-sub{
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px){
+  .grid-2{ grid-template-columns: 1fr; }
+}
+
+.default-badge{
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.35);
+  color: var(--text-main);
+}
+
+.address-card:has(input:checked){
+  border: 1px solid rgba(34,197,94,0.55);
+  box-shadow: 0 10px 25px rgba(34,197,94,0.12);
+}
+
 </style>
 
 </head>
 
 <body>
 <!-- ================= HEADER ================= -->
-<header class="header">
-    <div class="brand">
-        <a href="{% url 'home' %}" class="logo-link">
-            <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
-        </a>
-    </div>
 
-    <div class="header-actions">
-        <button class="icon-btn" title="Help"><span class="icon">❓</span></button>
-        <!-- THEME TOGGLE -->
+<!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        <span class="icon">❓</span>
+    </button>
+
+    <!-- THEME TOGGLE -->
     <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-        <span id="themeIcon", class = "icon">🌙</span>
+        <span class="icon" id="themeIcon">🌙</span>
     </button>
 
 
@@ -223,31 +381,56 @@ body[data-theme="dark"] {
     {% endif %}
 
 
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <span class="icon">
+                <img
+                src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                alt="Profile"
+                class="nav-avatar-img"
+                >
 
-        <div class="profile-menu">
-            <button class="profile-avatar" onclick="toggleProfileMenu(event)">
-                <img src="{% static 'images/profile.png' %}" alt="Profile">
-            </button>
+            </span>
+        </button>
 
-            <div class="profile-dropdown" id="profileDropdown">
-                <div class="profile-header">
-                    <img src="{% static 'images/profile.png' %}" class="profile-pic">
-                    <strong>{{ username|capfirst }}</strong>
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
+
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img
+                    src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                    class="profile-pic"
+                    alt="User"
+                >
+                <div class="profile-meta">
+                    <strong class="profile-name">{{ nav_user.username|capfirst }}</strong>
+                </div>
                 </div>
 
-                <div class="dropdown-divider"></div>
 
-                <a href="#" class="dropdown-item">👤 My Profile</a>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
+                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
                 <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
-                <div class="dropdown-divider"></div>
 
-                <a href="javascript:void(0)"
-                   class="dropdown-item logout"
-                   onclick="openLogoutModal()">🚪 Log Out</a>
-            </div>
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+
         </div>
     </div>
-</header>
+</div>
+    </header>
+    
 <div class="checkout-container">
 
     <div class="checkout-header">
@@ -259,13 +442,81 @@ body[data-theme="dark"] {
 
 
     <div class="cart-list">
-        {% for ci in cart_items %}
-            <div class="cart-item">
-                <span>{{ ci.item.name }} × {{ ci.quantity }}</span>
-                <span>₹{{ ci.item.price|floatformat:2 }}</span>
-            </div>
-        {% endfor %}
+  {% for ci in cart_items %}
+    <div class="cart-item">
+      <div class="cart-left">
+        <img class="cart-thumb"
+            src="{% if ci.item.picture_file %}{{ ci.item.picture_file.url }}{% elif ci.item.picture %}{{ ci.item.picture }}{% else %}{% static 'images/default_food.png' %}{% endif %}"
+            alt="{{ ci.item.name }}">
+        <div class="cart-meta">
+          <div class="cart-name">{{ ci.item.name }}</div>
+          <div class="cart-qty">Qty: {{ ci.quantity }}</div>
+        </div>
+      </div>
+
+      <div class="cart-price">₹{{ ci.item.price|floatformat:2 }}</div>
     </div>
+  {% endfor %}
+</div>
+
+<form id="checkoutForm">
+  <!-- ADDRESS -->
+  <div class="section-box">
+  <h3 class="section-title">Delivery Address</h3>
+
+  <div class="address-list">
+    {% for addr in addresses %}
+      <label class="address-card">
+        <input type="radio" name="address_id" value="{{ addr.id }}"
+          {% if default_address_id %}
+              {% if addr.id == default_address_id %}checked{% endif %}
+          {% else %}
+              {% if forloop.first %}checked{% endif %}
+          {% endif %}
+        >
+
+        <div class="address-body">
+          <div class="addr-line">
+            <strong>{{ addr.label }}</strong>
+            {% if addr.is_default %}
+              <span class="default-badge">DEFAULT</span>
+            {% endif %}
+          </div>
+          <div class="addr-line">{{ addr.address }}</div>
+        </div>
+      </label>
+    {% empty %}
+      <div class="empty-note">No saved addresses found.</div>
+    {% endfor %}
+  </div>
+</div>
+
+
+  <!-- PAYMENT -->
+  <div class="section-box">
+  <h3 class="section-title">Payment Method</h3>
+
+  <div class="pay-options">
+    <label class="pay-card">
+      <input type="radio" name="pay_method" value="ONLINE" checked>
+      <div>
+        <div class="pay-title">Pay Online (UPI / Card / NetBanking)</div>
+        <div class="pay-sub">Razorpay Checkout</div>
+      </div>
+    </label>
+
+    <label class="pay-card">
+      <input type="radio" name="pay_method" value="COD">
+      <div>
+        <div class="pay-title">Cash on Delivery</div>
+        <div class="pay-sub">Pay after delivery</div>
+      </div>
+    </label>
+  </div>
+</div>
+
+</form>
+
 
     <div class="total-box">
     <div>Items Total <span>₹{{ product_total }}</span></div>
@@ -280,9 +531,10 @@ body[data-theme="dark"] {
 
 
     <!-- Razorpay Button -->
-    <button id="rzp-button" class="checkout-btn">
-        PAY & PLACE ORDER
+    <button id="place-order-btn" class="checkout-btn">
+    CONTINUE
     </button>
+
 
 </div>
 <footer class="footer">
@@ -304,78 +556,125 @@ body[data-theme="dark"] {
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-    
 const CART_LIGHT = "{% static 'images/dark-cart.png' %}";
 const CART_DARK  = "{% static 'images/light-cart.png' %}";
 
-function toggleProfileMenu(event) {
-    event.stopPropagation();
-    document.getElementById("profileDropdown").classList.toggle("show");
-}
-
-document.addEventListener("click", function () {
-    const dropdown = document.getElementById("profileDropdown");
-    if (dropdown) dropdown.classList.remove("show");
-});
-
-function openLogoutModal() {
-    document.getElementById("logoutOverlay").classList.add("show");
-}
-
-function confirmLogout() {
-    window.location.href = "{% url 'logout' %}";
-}
-
-
 /* ================= CSRF HELPER ================= */
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + "=")) {
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-                break;
-            }
-        }
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return cookieValue;
+  }
+  return cookieValue;
 }
 
-/* ================= RAZORPAY ================= */
-var options = {
-    key: "{{ razorpay_key_id }}",
-    order_id: "{{ order_id }}",
-    currency: "INR",
-    name: "Crave Cart",
-    description: "Order Payment",
+/* ================= SAVE NEW ADDRESS ================= */
+function saveNewAddress() {
+  const payload = {
+    name: document.getElementById("a_name").value.trim(),
+    mobile: document.getElementById("a_mobile").value.trim(),
+    house_no: document.getElementById("a_house").value.trim(),
+    area: document.getElementById("a_area").value.trim(),
+    city: document.getElementById("a_city").value.trim(),
+    state: document.getElementById("a_state").value.trim(),
+    pincode: document.getElementById("a_pin").value.trim(),
+  };
 
-    handler: function (response) {
-        fetch("{% url 'payment_success' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(response)
-        })
-        .then(() => {
-            window.location.href = "{% url 'order_history' %}";
-        });
+  fetch("{% url 'add_address_ajax' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+  .then(r => r.json())
+  .then(data => {
+    const msg = document.getElementById("addrMsg");
+    if (data.ok) {
+      msg.textContent = "✅ Address saved. Refreshing...";
+      window.location.reload();
+    } else {
+      msg.textContent = "❌ " + (data.error || "Unable to save address");
     }
+  })
+  .catch(() => {
+    document.getElementById("addrMsg").textContent = "❌ Network error";
+  });
+}
+
+/* ================= RAZORPAY OPTIONS ================= */
+var options = {
+  key: "{{ razorpay_key_id }}",
+  order_id: "{{ order_id }}",
+  currency: "INR",
+  name: "Crave Cart",
+  description: "Order Payment",
+  handler: function (response) {
+    fetch("{% url 'payment_success' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(response)
+    })
+    .then(() => window.location.href = "{% url 'order_history' %}");
+  }
 };
 
 var rzp = new Razorpay(options);
-document.getElementById("rzp-button").onclick = function (e) {
+
+/* ================= PLACE ORDER CLICK ================= */
+document.getElementById("place-order-btn").onclick = function (e) {
+  e.preventDefault();
+
+  const addressId = document.querySelector('input[name="address_id"]:checked')?.value;
+  const payMethod = document.querySelector('input[name="pay_method"]:checked')?.value;
+
+  if (!addressId) {
+    alert("Please select a delivery address.");
+    return;
+  }
+
+  // Save selected address + payment method in backend before payment
+  fetch("{% url 'set_checkout_selection' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ address_id: addressId, pay_method: payMethod })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) {
+      alert(data.error || "Something went wrong");
+      return;
+    }
+
+    // COD flow
+    if (payMethod === "COD") {
+        window.location.href = "{% url 'place_cod_order' %}";
+        return;
+        }
+
+
+    // ONLINE flow (Razorpay supports UPI inside)
     rzp.open();
-    e.preventDefault();
+  });
 };
 
 
 </script>
+
 
 </body>
 </html>

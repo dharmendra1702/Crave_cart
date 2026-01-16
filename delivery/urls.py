@@ -97,6 +97,13 @@ urlpatterns = [
     path("profile/email/update/",views.update_email, name="update_email"),
     path("profile/username/verify-password/",views.verify_username_password,name="verify_username_password"),
     path("profile/username/update/",views.update_username,name="update_username"),
+    path("add-extra-mobile/", views.add_extra_mobile, name="add_extra_mobile"),
+    path("delete-extra-mobile/<int:mid>/", views.delete_extra_mobile, name="delete_extra_mobile"),
+    path("add-extra-address/", views.add_extra_address, name="add_extra_address"),
+    path("delete-extra-address/<int:aid>/", views.delete_extra_address, name="delete_extra_address"),
+    path("make-primary-mobile/<int:mid>/", views.make_primary_mobile, name="make_primary_mobile"),
+    path("make-default-address/<int:aid>/", views.make_default_address, name="make_default_address"),
+
 
 
 
@@ -138,6 +145,12 @@ urlpatterns = [
     path("invoice/<int:order_id>/", views.download_invoice, name="download_invoice"),
     path("reorder/<int:order_id>/", views.reorder, name="reorder"),
     path("order-status/<int:order_id>/", views.order_status_api, name="order_status_api"),
+    path("order/<int:order_id>/cancel/", views.cancel_order, name="cancel_order"),
+    path("checkout/add-address/", views.add_address_ajax, name="add_address_ajax"),
+    path("checkout/set-selection/", views.set_checkout_selection, name="set_checkout_selection"),
+    path("checkout/cod/", views.place_cod_order, name="place_cod_order"),
+
+    
 
     # Admin Orders
     path("admin-panel/orders/", views.admin_orders, name="admin_orders"),

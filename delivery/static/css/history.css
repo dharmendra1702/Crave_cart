@@ -1,5 +1,3 @@
-body { outline: 8px solid red !important; }
-
 
 :root {
   --bg-page: #f4f5f7;
@@ -669,3 +667,65 @@ body[data-theme="dark"] .rated-pill{
 }
 
 .review-text{ margin-top:6px; font-size:14px; opacity:.9; }
+
+.cancel-btn{
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  background: #ff3b3b;
+  color: white;
+  margin-right: 10px;
+}
+.cancel-btn:hover{
+  opacity: 0.9;
+}
+
+.step.cancelled{
+  background: #ffebee;
+  color: #c62828;
+  font-weight: 700;
+}
+
+.logout-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+}
+.logout-overlay.show{
+  display:flex;
+}
+
+/* -------- STATUS BADGE COLORS -------- */
+.order-status{
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-block;
+}
+
+/* default fallbacks */
+.order-status.status-PLACED{ background:#e3f2fd; color:#1565c0; }
+.order-status.status-PREPARING{ background:#fff8e1; color:#f57f17; }
+.order-status.status-OUT_FOR_DELIVERY{ background:#e8f5e9; color:#2e7d32; }
+.order-status.status-DELIVERED{ background:#e8f5e9; color:#1b5e20; }
+
+/* ✅ cancelled: grey/red premium */
+.order-status.status-CANCELLED{
+  background:#ffebee;
+  color:#c62828;
+  border: 1px solid rgba(198,40,40,0.25);
+}
+
+/* -------- DISABLED TRACK BUTTON -------- */
+.track-btn.disabled{
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}

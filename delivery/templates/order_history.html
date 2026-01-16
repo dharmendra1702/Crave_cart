@@ -16,25 +16,25 @@
 <body>
 
     <!-- HEADER -->
+    <!-- Header -->
     <header class="header">
         <div class="brand">
             <a href="{% url 'home' %}" class="logo-link">
                 <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
             </a>
         </div>
-
-        <!-- RIGHT ACTIONS -->
         <div class="header-actions">
 
-            <!-- HELP -->
-            <button class="icon-btn" title="Help">
-                <span class="icon">❓</span>
-            </button>
+    <!-- HELP -->
+    <button class="icon-btn" title="Help">
+        <span class="icon">❓</span>
+    </button>
 
-            <!-- THEME TOGGLE -->
-        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-            <span id="themeIcon", class = "icon">🌙</span>
-        </button>
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span class="icon" id="themeIcon">🌙</span>
+    </button>
+
 
 
     <!-- CART (BETWEEN THEME & PROFILE) -->
@@ -53,44 +53,54 @@
     {% endif %}
 
 
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <span class="icon">
+                <img
+                src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                alt="Profile"
+                class="nav-avatar-img"
+                >
 
-            <!-- PROFILE -->
-            <div class="profile-menu">
-                <button class="profile-avatar" onclick="toggleProfileMenu(event)">
-                    <span class="icon">
-                    <img src="{% static 'images/profile.png' %}" alt="Profile">
-                    </span>
-                </button>
+            </span>
+        </button>
 
-                <!-- DROPDOWN -->
-                <div class="profile-dropdown" id="profileDropdown">
+        <!-- DROPDOWN -->
+        <div class="profile-dropdown" id="profileDropdown">
 
-                    <!-- USER INFO -->
-                    <div class="profile-header">
-                        <img src="{% static 'images/profile.png' %}" class="profile-pic">
-                        <div>
-                            <strong>{{ username|capfirst }}</strong>
-                        </div>
-                    </div>
-
-                    <div class="dropdown-divider"></div>
-
-                    <!-- CUSTOMER MENU -->
-                    <a href="#" class="dropdown-item">👤 My Profile</a>
-                    <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
-
-                    <div class="dropdown-divider"></div>
-
-                    <a href="javascript:void(0)"
-                        class="dropdown-item logout"
-                        onclick="openLogoutModal()">
-                            🚪 Log Out
-                    </a>
-
-
+            <!-- USER INFO -->
+            <div class="profile-header">
+                <img
+                    src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
+                    class="profile-pic"
+                    alt="User"
+                >
+                <div class="profile-meta">
+                    <strong class="profile-name">{{ nav_user.username|capfirst }}</strong>
                 </div>
-            </div>
+                </div>
+
+
+
+            <div class="dropdown-divider"></div>
+
+            <!-- MENU -->
+                <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
+                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
+                <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
+
+            <div class="dropdown-divider"></div>
+
+            <a href="javascript:void(0)"
+                    class="dropdown-item logout"
+                    onclick="openLogoutModal()">
+                    🚪 Log Out
+             </a>
+
         </div>
+    </div>
+</div>
     </header>
 
 <div class="orders-wrapper">
@@ -161,23 +171,43 @@
     <div class="row total"><span>Total paid</span><span>₹{{ order.total_amount }}</span></div>
   </div>
 
+  <div class="order-row">
+    <strong>Address:</strong>
+    {{ order.delivery_address_label|default:"" }}
+    {% if order.delivery_address %} - {{ order.delivery_address }}{% endif %}
+  </div>
+
+  <div class="order-row">
+    <strong>Payment:</strong> {{ order.payment_method }} • {{ order.payment_status }}
+  </div>
+
   <!-- TRACK -->
   <button class="track-btn" onclick="toggleTrack({{ order.id }})">
     🚚 Track Order
   </button>
 
-  <div class="track-panel" id="track-{{ order.id }}">
-    <div class="track-steps">
-      <div class="step active">Placed</div>
-      <div class="step {% if order.status != 'PLACED' %}active{% endif %}">Preparing</div>
-      <div class="step {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}active{% endif %}">On the way</div>
-      <div class="step {% if order.status == 'DELIVERED' %}active{% endif %}">Delivered</div>
-    </div>
+<div class="track-panel" id="track-{{ order.id }}">
+  <div class="track-steps">
+    {% if order.status == "CANCELLED" %}
+      <div class="step cancelled active">Cancelled</div>
+    {% else %}
+      <div class="step {% if order.status in "PLACED PREPARING OUT_FOR_DELIVERY DELIVERED" %}active{% endif %}">Placed</div>
+      <div class="step {% if order.status in "PREPARING OUT_FOR_DELIVERY DELIVERED" %}active{% endif %}">Preparing</div>
+      <div class="step {% if order.status in "OUT_FOR_DELIVERY DELIVERED" %}active{% endif %}">On the way</div>
+      <div class="step {% if order.status == "DELIVERED" %}active{% endif %}">Delivered</div>
+    {% endif %}
   </div>
+</div>
+
 
   <!-- FOOTER -->
   <div class="order-footer">
-    {% if order.status == "DELIVERED" %}
+
+  {% if order.status == "CANCELLED" %}
+  <div class="eta delivered" style="color:#e53935;">
+    Order Cancelled
+  </div>
+{% elif order.status == "DELIVERED" %}
   <div class="eta delivered">
     ✅ Delivered in {{ order.delivery_minutes }} minutes
     {% if order.delivered_at %}
@@ -187,14 +217,28 @@
     {% endif %}
   </div>
 {% else %}
-      <div class="eta">⏱ Estimated delivery: <b>30–40 mins</b></div>
-    {% endif %}
+  <div class="eta">⏱ Estimated delivery: <b>30–40 mins</b></div>
+{% endif %}
 
-    <div class="footer-right">
-      <a href="{% url 'download_invoice' order.id %}">Invoice</a>
-      <a href="{% url 'reorder' order.id %}">Reorder</a>
-    </div>
+
+  <div class="footer-right">
+
+    {# ✅ Cancel allowed only BEFORE OUT_FOR_DELIVERY #}
+    {% if order.status == "PLACED" or order.status == "PREPARING" %}
+  <button type="button"
+          class="cancel-btn"
+          onclick="openCancelModal('{{ order.id }}','{{ order.order_number }}')">
+    Cancel Order
+  </button>
+{% endif %}
+
+
+    <a href="{% url 'download_invoice' order.id %}">Invoice</a>
+    <a href="{% url 'reorder' order.id %}">Reorder</a>
   </div>
+
+</div>
+
 
   <!-- ⭐ RATING (ONLY IF DELIVERED & NOT RATED) -->
   {% if order.status == "DELIVERED" and not order.rating %}
@@ -261,6 +305,25 @@
         </button>
     </div>
 </div>
+
+<div class="logout-overlay" id="cancelOverlay">
+  <div class="logout-modal">
+    <h3 id="cancelTitle">Cancel Order?</h3>
+    <p>This action cannot be undone.</p>
+
+    <form id="cancelForm" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn primary full-width">
+        Yes, Cancel Order
+      </button>
+    </form>
+
+    <button type="button" class="btn full-width" style="margin-top:10px;" onclick="closeCancelModal()">
+      No, Keep Order
+    </button>
+  </div>
+</div>
+
 
 <script src="{% static 'js/theme.js' %}"></script>
 <script>
@@ -339,6 +402,14 @@ function startLiveTracking(orderId) {
 
 /* ---------- TRACK STEPS ---------- */
 function updateSteps(orderId, status) {
+  const panel = document.querySelector(`#track-${orderId} .track-steps`);
+  if (!panel) return;
+
+  if (status === "CANCELLED") {
+    panel.innerHTML = `<div class="step cancelled active">Cancelled</div>`;
+    return;
+  }
+
   const steps = document.querySelectorAll(`#track-${orderId} .step`);
   const flow = ["PLACED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
 
@@ -346,6 +417,7 @@ function updateSteps(orderId, status) {
     step.classList.toggle("active", flow.indexOf(status) >= i);
   });
 }
+
 
 function toggleItems(orderId) {
   const items = document.getElementById("items-" + orderId);
@@ -360,6 +432,31 @@ function toggleItems(orderId) {
     ? "Show less"
     : `+${count} more items`;
 }
+
+function openCancelModal(orderId, orderNumber) {
+  const overlay = document.getElementById("cancelOverlay");
+  const form = document.getElementById("cancelForm");
+  const title = document.getElementById("cancelTitle");
+
+  // show order number in popup
+  title.textContent = `Cancel Order #${orderNumber}?`;
+
+  // IMPORTANT: match your urls.py path
+  form.action = `/order/${orderId}/cancel/`;
+
+  overlay.classList.add("show");
+}
+
+function closeCancelModal() {
+  document.getElementById("cancelOverlay").classList.remove("show");
+}
+
+// close on outside click (same feel as logout)
+document.addEventListener("click", function (e) {
+  const overlay = document.getElementById("cancelOverlay");
+  if (e.target === overlay) closeCancelModal();
+});
+
 </script>
 
 </body>

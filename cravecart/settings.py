@@ -119,6 +119,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'delivery.context_processors.cart_count_processor',
+                'delivery.context_processors.user_dropdown',
+                'delivery.context_processors.nav_context',
             ],
         },
     },
