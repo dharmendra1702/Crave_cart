@@ -213,19 +213,17 @@ STATICFILES_DIRS = []  # IMPORTANT (empty for Render)
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-ADMIN_ORDER_EMAIL = os.environ.get("ADMIN_ORDER_EMAIL", "")
+
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+ADMIN_ORDER_EMAIL = os.environ.get("ADMIN_ORDER_EMAIL", "")
 
-
-
-EMAIL_TIMEOUT = 10  # seconds
 
 
 
@@ -259,3 +257,10 @@ else:
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+}

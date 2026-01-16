@@ -992,6 +992,14 @@ def order_history(request):
 from decimal import Decimal
 from django.shortcuts import redirect
 
+from decimal import Decimal
+from django.shortcuts import redirect
+import threading
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
+
 def place_cod_order(request):
     username = request.session.get("username")
     if not username:
@@ -1045,8 +1053,9 @@ def place_cod_order(request):
         try:
             if item.picture_file:
                 image_url = item.picture_file.url
-        except:
+        except Exception:
             image_url = None
+
         if not image_url and item.picture:
             image_url = item.picture
 
@@ -1065,17 +1074,26 @@ def place_cod_order(request):
             coupon.is_active = False
         coupon.save()
 
+    # clear cart
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
+    # clear session
     request.session.pop("applied_coupon", None)
     request.session.pop("razorpay_order_id", None)
     request.session.pop("selected_address_id", None)
     request.session.pop("pay_method", None)
 
+    # ✅ SEND EMAILS ASYNC (like online)
+    def _send():
+        try:
+            send_order_emails(order, request=request)
+        except Exception:
+            logger.error("COD email failed:\n%s", traceback.format_exc())
+
+    threading.Thread(target=_send, daemon=True).start()
+
     return redirect("order_history")
-
-
 
 
 
@@ -1277,6 +1295,9 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 def send_order_emails(order, request=None):
     # items fetch safely
@@ -1293,10 +1314,14 @@ def send_order_emails(order, request=None):
             "line_total": line_total
         })
 
+    site_url = request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"
+    admin_url = request.build_absolute_uri("/admin/") if request else "http://127.0.0.1:8000/admin/"
+
     context_common = {
         "order_id": order.id,
         "payment_id": order.payment_id,
-        "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p") if hasattr(order, "created_at") else timezone.now().strftime("%d %b %Y, %I:%M %p"),
+        "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p")
+        if hasattr(order, "created_at") and order.created_at else timezone.now().strftime("%d %b %Y, %I:%M %p"),
         "items": items,
         "subtotal": order.subtotal,
         "gst": order.gst_amount,
@@ -1305,8 +1330,8 @@ def send_order_emails(order, request=None):
         "discount": order.coupon_discount,
         "total": order.total_amount,
         "year": timezone.now().year,
-        "site_url": (request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"),
-        "admin_url": (request.build_absolute_uri("/admin/") if request else "http://127.0.0.1:8000/admin/"),
+        "site_url": site_url,
+        "admin_url": admin_url,
         "user_name": order.user.username,
         "user_email": order.user.email,
     }
@@ -1323,33 +1348,39 @@ def send_order_emails(order, request=None):
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[order.user.email],
         )
-
-        import logging
-        logger = logging.getLogger(__name__)
+        msg_user.attach_alternative(user_html, "text/html")
 
         try:
-            send_mail(...)
-            logger.info("Order email sent successfully")
-        except Exception as e:
-            logger.exception("Order email failed: %s", e)
-
-
-        msg_user.attach_alternative(user_html, "text/html")
-        msg_user.send()
+            msg_user.send(fail_silently=False)
+            logger.info("USER mail sent order_id=%s to=%s", order.id, order.user.email)
+        except Exception:
+            logger.exception("USER mail failed order_id=%s to=%s", order.id, order.user.email)
+    else:
+        logger.warning("User email missing; skipping USER mail. order_id=%s", order.id)
 
     # ---------- ADMIN ----------
-    admin_subject = f"New Order Received: #{order.id} 🚀"
-    admin_text = render_to_string("emails/admin_order.txt", context_common)
-    admin_html = render_to_string("emails/admin_order.html", context_common)
+    admin_email = getattr(settings, "ADMIN_ORDER_EMAIL", "") or ""
+    if admin_email:
+        admin_subject = f"New Order Received: #{order.id} 🚀"
+        admin_text = render_to_string("emails/admin_order.txt", context_common)
+        admin_html = render_to_string("emails/admin_order.html", context_common)
 
-    msg_admin = EmailMultiAlternatives(
-        subject=admin_subject,
-        body=admin_text,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.ADMIN_ORDER_EMAIL],
-    )
-    msg_admin.attach_alternative(admin_html, "text/html")
-    msg_admin.send()
+        msg_admin = EmailMultiAlternatives(
+            subject=admin_subject,
+            body=admin_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[admin_email],
+        )
+        msg_admin.attach_alternative(admin_html, "text/html")
+
+        try:
+            msg_admin.send(fail_silently=False)
+            logger.info("ADMIN mail sent order_id=%s to=%s", order.id, admin_email)
+        except Exception:
+            logger.exception("ADMIN mail failed order_id=%s to=%s", order.id, admin_email)
+    else:
+        logger.warning("ADMIN_ORDER_EMAIL not set; skipping ADMIN mail. order_id=%s", order.id)
+
 
 
 def send_order_status_email(order, new_status, request=None):
@@ -1386,7 +1417,8 @@ def send_order_status_email(order, new_status, request=None):
             to=[order.user.email],
         )
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=True)
+        msg.send(fail_silently=False)
+
 
 @require_POST
 def delete_extra_mobile(request, mid):
