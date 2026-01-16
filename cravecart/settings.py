@@ -209,9 +209,16 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-STATICFILES_DIRS = []  # IMPORTANT (empty for Render)
+# ✅ collectstatic will also pick app static (delivery/static/...)
+# ✅ this also makes caching safe in production
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# If you ever have a global "static/" folder at project root, add it here.
+# Otherwise keep only delivery/static (optional; AppDirectoriesFinder already finds it).
+STATICFILES_DIRS = [
+    BASE_DIR / "delivery" / "static",
+]
 
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
