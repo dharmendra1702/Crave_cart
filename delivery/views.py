@@ -1323,6 +1323,17 @@ def send_order_emails(order, request=None):
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[order.user.email],
         )
+
+        import logging
+        logger = logging.getLogger(__name__)
+
+        try:
+            send_mail(...)
+            logger.info("Order email sent successfully")
+        except Exception as e:
+            logger.exception("Order email failed: %s", e)
+
+
         msg_user.attach_alternative(user_html, "text/html")
         msg_user.send()
 

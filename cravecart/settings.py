@@ -224,6 +224,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_ORDER_EMAIL = os.getenv("ADMIN_EMAIL")
 
 
+EMAIL_TIMEOUT = 10  # seconds
+
 
 
 # Razepay Key ID and Secret Key
