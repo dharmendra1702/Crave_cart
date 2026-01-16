@@ -1290,17 +1290,16 @@ def update_username(request):
 
     return redirect("profile")
 
+import logging
 from decimal import Decimal
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
-import logging
 
 logger = logging.getLogger(__name__)
 
 def send_order_emails(order, request=None):
-    # items fetch safely
     items_manager = getattr(order, "items", None)
     items_qs = items_manager.all() if items_manager else order.orderitem_set.all()
 
@@ -1314,14 +1313,13 @@ def send_order_emails(order, request=None):
             "line_total": line_total
         })
 
-    site_url = request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"
-    admin_url = request.build_absolute_uri("/admin/") if request else "http://127.0.0.1:8000/admin/"
+    site_url = request.build_absolute_uri("/") if request else "https://crave-cart-82wd.onrender.com/"
+    admin_url = request.build_absolute_uri("/admin/") if request else "https://crave-cart-82wd.onrender.com/admin/"
 
     context_common = {
         "order_id": order.id,
         "payment_id": order.payment_id,
-        "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p")
-        if hasattr(order, "created_at") and order.created_at else timezone.now().strftime("%d %b %Y, %I:%M %p"),
+        "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p"),
         "items": items,
         "subtotal": order.subtotal,
         "gst": order.gst_amount,
@@ -1336,54 +1334,48 @@ def send_order_emails(order, request=None):
         "user_email": order.user.email,
     }
 
-    # ---------- USER ----------
-    user_subject = f"Your Order #{order.id} is Placed ✅"
-    user_text = render_to_string("emails/user_order.txt", context_common)
-    user_html = render_to_string("emails/user_order.html", context_common)
-
+    # -------- USER --------
     if order.user.email:
-        msg_user = EmailMultiAlternatives(
-            subject=user_subject,
-            body=user_text,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[order.user.email],
-        )
-        msg_user.attach_alternative(user_html, "text/html")
+        user_subject = f"Your Order #{order.id} is Placed ✅"
+        user_text = render_to_string("emails/user_order.txt", context_common)
+        user_html = render_to_string("emails/user_order.html", context_common)
 
         try:
+            msg_user = EmailMultiAlternatives(
+                subject=user_subject,
+                body=user_text,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[order.user.email],
+            )
+            msg_user.attach_alternative(user_html, "text/html")
             msg_user.send(fail_silently=False)
-            logger.info("USER mail sent order_id=%s to=%s", order.id, order.user.email)
-        except Exception:
-            logger.exception("USER mail failed order_id=%s to=%s", order.id, order.user.email)
-    else:
-        logger.warning("User email missing; skipping USER mail. order_id=%s", order.id)
+            logger.info("USER email sent order_id=%s to=%s", order.id, order.user.email)
+            print(f"USER email sent order_id={order.id} to={order.user.email}")
+        except Exception as e:
+            logger.exception("USER email failed order_id=%s to=%s err=%s", order.id, order.user.email, e)
+            print(f"USER mail failed order_id={order.id} to={order.user.email}\n{e}")
 
-    # ---------- ADMIN ----------
-    admin_email = getattr(settings, "ADMIN_ORDER_EMAIL", "") or ""
-    if admin_email:
+    # -------- ADMIN --------
+    admin_to = getattr(settings, "ADMIN_ORDER_EMAIL", None)
+    if admin_to:
         admin_subject = f"New Order Received: #{order.id} 🚀"
         admin_text = render_to_string("emails/admin_order.txt", context_common)
         admin_html = render_to_string("emails/admin_order.html", context_common)
 
-        msg_admin = EmailMultiAlternatives(
-            subject=admin_subject,
-            body=admin_text,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[admin_email],
-        )
-        msg_admin.attach_alternative(admin_html, "text/html")
-
         try:
-            msg_user.send(fail_silently=False)
-            logger.info("USER email sent order_id=%s to=%s", order.id, order.user.email)
-        except Exception:
-            logger.exception("USER mail failed order_id=%s to=%s", order.id, order.user.email)
-
-        try:
+            msg_admin = EmailMultiAlternatives(
+                subject=admin_subject,
+                body=admin_text,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[admin_to],
+            )
+            msg_admin.attach_alternative(admin_html, "text/html")
             msg_admin.send(fail_silently=False)
-            logger.info("ADMIN email sent order_id=%s to=%s", order.id, settings.ADMIN_ORDER_EMAIL)
-        except Exception:
-            logger.exception("ADMIN mail failed order_id=%s to=%s", order.id, settings.ADMIN_ORDER_EMAIL)
+            logger.info("ADMIN email sent order_id=%s to=%s", order.id, admin_to)
+            print(f"ADMIN email sent order_id={order.id} to={admin_to}")
+        except Exception as e:
+            logger.exception("ADMIN email failed order_id=%s to=%s err=%s", order.id, admin_to, e)
+            print(f"ADMIN mail failed order_id={order.id} to={admin_to}\n{e}")
 
 
 
