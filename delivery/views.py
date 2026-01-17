@@ -27,6 +27,9 @@ def index(request):
     #Go to home page
     return render(request, "index.html")
     
+def about(request):
+    return render(request, "about.html")   
+
 def open_signin(request):
     #Go to sign in page
     return render(request, 'signin.html')
@@ -621,7 +624,6 @@ def payment_success(request):
 
     totals = calculate_cart_totals(request, cart)
 
-    # ✅ selected address snapshot
     address_id = request.session.get("selected_address_id")
     addr = UserExtraAddress.objects.filter(id=address_id, user=user).first() if address_id else None
 
@@ -647,9 +649,11 @@ def payment_success(request):
 
         delivery_address_label=(addr.label if addr else None),
         delivery_address=(addr.address if addr else None),
+
+        status="PLACED",
     )
 
-    # ✅ coupon usage
+    # coupon usage
     if coupon_code:
         coupon = Coupon.objects.get(code=coupon_code)
         coupon.used_count += 1
@@ -657,15 +661,14 @@ def payment_success(request):
             coupon.is_active = False
         coupon.save()
 
-    # ✅ order items
+    # order items
     for ci in CartItem.objects.filter(cart=cart):
         item = ci.item
-
         image_url = None
         try:
             if item.picture_file:
                 image_url = item.picture_file.url
-        except:
+        except Exception:
             image_url = None
         if not image_url and item.picture:
             image_url = item.picture
@@ -678,23 +681,22 @@ def payment_success(request):
             item_image=image_url
         )
 
-    # ✅ clear cart
+    # clear cart + session
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
-    # ✅ clear session
     request.session.pop("applied_coupon", None)
     request.session.pop("checkout_data", None)
     request.session.pop("razorpay_order_id", None)
     request.session.pop("selected_address_id", None)
     request.session.pop("pay_method", None)
 
-    # ✅ async emails
+    # ✅ placed emails (USER + ADMIN)
     def _send():
         try:
             send_order_emails(order, request=request)
         except Exception:
-            print("❌ Email failed:\n", traceback.format_exc())
+            logger.error("Placed email failed:\n%s", traceback.format_exc())
 
     threading.Thread(target=_send, daemon=True).start()
 
@@ -719,7 +721,7 @@ FREE_DELIVERY_LIMIT = Decimal("99")
 DELIVERY_CHARGE = Decimal("40")
 GST_RATE = Decimal("0.05")
 
-
+NOTIFY_USER_STATUSES = {"PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"}
 
 def calculate_cart_totals(request, cart):
     product_total = Decimal("0.00")
@@ -757,7 +759,6 @@ def calculate_cart_totals(request, cart):
     }
 
 
-@require_POST
 def cancel_order(request, order_id):
     order = Order.objects.get(id=order_id, user__username=request.session["username"])
 
@@ -765,6 +766,7 @@ def cancel_order(request, order_id):
         order.status = "CANCELLED"
         order.save()
 
+        # ✅ status mail USER ONLY
         threading.Thread(
             target=send_order_status_email,
             args=(order, "CANCELLED", request),
@@ -772,6 +774,7 @@ def cancel_order(request, order_id):
         ).start()
 
     return redirect("order_history")
+
 
 
 def logout(request):
@@ -816,23 +819,26 @@ def download_invoice(request, order_id):
     return response
 
 
-@require_POST
+# views.py
+from decimal import Decimal, ROUND_HALF_UP
+from django.shortcuts import redirect, get_object_or_404
+
 def rate_order(request, order_id):
-    order = get_object_or_404(
-        Order,
-        id=order_id,
-        user__username=request.session["username"]
-    )
+    order = get_object_or_404(Order, id=order_id)
 
-    if order.status != "DELIVERED":
-        return redirect("order_history")
+    if request.method == "POST":
+        raw = request.POST.get("rating", "0")
 
-    order.rating = Decimal(request.POST.get("rating"))
-    order.review = request.POST.get("review", "")
-    order.save()
+        # force 1-decimal precision without losing value
+        rating = Decimal(raw).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
 
-    # 🔔 ADMIN NOTIFICATION FLAG
-    request.session["new_rating"] = True
+        # clamp to 0..5
+        if rating < 0: rating = Decimal("0.0")
+        if rating > 5: rating = Decimal("5.0")
+
+        order.rating = rating
+        order.review = request.POST.get("review", "").strip()
+        order.save(update_fields=["rating", "review"])
 
     return redirect("order_history")
 
@@ -896,14 +902,12 @@ def admin_update_order_status(request, order_id):
         return redirect("signin")
 
     order = get_object_or_404(Order, id=order_id)
-
     old_status = order.status
     new_status = request.POST.get("status")
 
     if new_status in dict(Order.STATUS_CHOICES) and new_status != old_status:
         order.status = new_status
 
-        # set delivered time once
         if new_status == "DELIVERED" and order.delivered_at is None:
             order.delivered_at = timezone.now()
 
@@ -912,12 +916,13 @@ def admin_update_order_status(request, order_id):
 
         order.save()
 
-        # ✅ send mail async (fast redirect)
-        threading.Thread(
-            target=send_order_status_email,
-            args=(order, new_status, request),
-            daemon=True
-        ).start()
+        # ✅ status mail USER ONLY for these statuses
+        if new_status in NOTIFY_USER_STATUSES:
+            threading.Thread(
+                target=send_order_status_email,
+                args=(order, new_status, request),
+                daemon=True
+            ).start()
 
     return redirect("admin_order_detail", order_id=order.id)
 
@@ -1048,14 +1053,12 @@ def place_cod_order(request):
 
     for ci in CartItem.objects.filter(cart=cart):
         item = ci.item
-
         image_url = None
         try:
             if item.picture_file:
                 image_url = item.picture_file.url
         except Exception:
             image_url = None
-
         if not image_url and item.picture:
             image_url = item.picture
 
@@ -1074,22 +1077,20 @@ def place_cod_order(request):
             coupon.is_active = False
         coupon.save()
 
-    # clear cart
     CartItem.objects.filter(cart=cart).delete()
     cart.delete()
 
-    # clear session
     request.session.pop("applied_coupon", None)
     request.session.pop("razorpay_order_id", None)
     request.session.pop("selected_address_id", None)
     request.session.pop("pay_method", None)
 
-    # ✅ SEND EMAILS ASYNC (like online)
+    # ✅ placed emails (USER + ADMIN)
     def _send():
         try:
             send_order_emails(order, request=request)
         except Exception:
-            logger.error("COD email failed:\n%s", traceback.format_exc())
+            logger.error("COD placed email failed:\n%s", traceback.format_exc())
 
     threading.Thread(target=_send, daemon=True).start()
 
@@ -1300,6 +1301,7 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 def send_order_emails(order, request=None):
+    # items
     items_manager = getattr(order, "items", None)
     items_qs = items_manager.all() if items_manager else order.orderitem_set.all()
 
@@ -1313,10 +1315,10 @@ def send_order_emails(order, request=None):
             "line_total": line_total
         })
 
-    site_url = request.build_absolute_uri("/") if request else "https://crave-cart-82wd.onrender.com/"
-    admin_url = request.build_absolute_uri("/admin/") if request else "https://crave-cart-82wd.onrender.com/admin/"
+    site_url = request.build_absolute_uri("/") if request else settings.SITE_URL
+    admin_url = request.build_absolute_uri("/admin/") if request else settings.SITE_URL.rstrip("/") + "/admin/"
 
-    context_common = {
+    context = {
         "order_id": order.id,
         "payment_id": order.payment_id,
         "order_date": timezone.localtime(order.created_at).strftime("%d %b %Y, %I:%M %p"),
@@ -1334,53 +1336,45 @@ def send_order_emails(order, request=None):
         "user_email": order.user.email,
     }
 
-    # -------- USER --------
+    # USER mail
     if order.user.email:
-        user_subject = f"Your Order #{order.id} is Placed ✅"
-        user_text = render_to_string("emails/user_order.txt", context_common)
-        user_html = render_to_string("emails/user_order.html", context_common)
+        subject = f"Your Order #{order.id} is Placed ✅"
+        text_body = render_to_string("emails/user_order.txt", context)
+        html_body = render_to_string("emails/user_order.html", context)
 
-        try:
-            msg_user = EmailMultiAlternatives(
-                subject=user_subject,
-                body=user_text,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[order.user.email],
-            )
-            msg_user.attach_alternative(user_html, "text/html")
-            msg_user.send(fail_silently=False)
-            logger.info("USER email sent order_id=%s to=%s", order.id, order.user.email)
-            print(f"USER email sent order_id={order.id} to={order.user.email}")
-        except Exception as e:
-            logger.exception("USER email failed order_id=%s to=%s err=%s", order.id, order.user.email, e)
-            print(f"USER mail failed order_id={order.id} to={order.user.email}\n{e}")
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[order.user.email],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
 
-    # -------- ADMIN --------
+    # ADMIN mail
     admin_to = getattr(settings, "ADMIN_ORDER_EMAIL", None)
     if admin_to:
-        admin_subject = f"New Order Received: #{order.id} 🚀"
-        admin_text = render_to_string("emails/admin_order.txt", context_common)
-        admin_html = render_to_string("emails/admin_order.html", context_common)
+        subject = f"New Order Received: #{order.id} 🚀"
+        text_body = render_to_string("emails/admin_order.txt", context)
+        html_body = render_to_string("emails/admin_order.html", context)
 
-        try:
-            msg_admin = EmailMultiAlternatives(
-                subject=admin_subject,
-                body=admin_text,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[admin_to],
-            )
-            msg_admin.attach_alternative(admin_html, "text/html")
-            msg_admin.send(fail_silently=False)
-            logger.info("ADMIN email sent order_id=%s to=%s", order.id, admin_to)
-            print(f"ADMIN email sent order_id={order.id} to={admin_to}")
-        except Exception as e:
-            logger.exception("ADMIN email failed order_id=%s to=%s err=%s", order.id, admin_to, e)
-            print(f"ADMIN mail failed order_id={order.id} to={admin_to}\n{e}")
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[admin_to],
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
+
 
 
 
 def send_order_status_email(order, new_status, request=None):
-    # status label (human readable)
+    # only send for required statuses (extra safety)
+    if new_status not in NOTIFY_USER_STATUSES:
+        return
+
     status_label = dict(order.STATUS_CHOICES).get(new_status, new_status)
 
     context = {
@@ -1390,11 +1384,10 @@ def send_order_status_email(order, new_status, request=None):
         "updated_at": timezone.localtime(timezone.now()).strftime("%d %b %Y, %I:%M %p"),
         "user_name": order.user.username,
         "year": timezone.now().year,
-        "site_url": (request.build_absolute_uri("/") if request else "http://127.0.0.1:8000/"),
+        "site_url": (request.build_absolute_uri("/") if request else settings.SITE_URL),
     }
 
     subject_map = {
-        "PLACED": f"Order #{order.id} Placed ✅",
         "PREPARING": f"Order #{order.id} is Being Prepared 🍳",
         "OUT_FOR_DELIVERY": f"Order #{order.id} is Out for Delivery 🛵",
         "DELIVERED": f"Order #{order.id} Delivered ✅",
@@ -1502,3 +1495,47 @@ def set_checkout_selection(request):
     request.session["selected_address_id"] = int(address_id)
     request.session["pay_method"] = pay_method
     return JsonResponse({"ok": True})
+
+
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+import logging
+
+logger = logging.getLogger(__name__)
+
+@require_POST
+def contact_submit(request):
+    name = (request.POST.get("name") or "").strip()
+    email = (request.POST.get("email") or "").strip()
+    phone = (request.POST.get("phone") or "").strip()
+    subject = (request.POST.get("subject") or "").strip()
+    message = (request.POST.get("message") or "").strip()
+
+    if not (name and email and phone and subject and message):
+        return redirect("/about?sent=0")
+
+    mail_subject = f"[CraveCart Contact] {subject}"
+    mail_body = (
+        f"New contact form submission:\n\n"
+        f"Name: {name}\n"
+        f"Email: {email}\n"
+        f"Mobile: {phone}\n"
+        f"Subject: {subject}\n\n"
+        f"Message:\n{message}\n"
+    )
+
+    try:
+        msg = EmailMessage(
+            subject=mail_subject,
+            body=mail_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.ADMIN_ORDER_EMAIL],
+            reply_to=[email],
+        )
+        msg.send(fail_silently=False)
+        return redirect("/about?sent=1")
+    except Exception as e:
+        logger.exception("Email sending failed: %s", e)
+        return redirect("/about?sent=0")

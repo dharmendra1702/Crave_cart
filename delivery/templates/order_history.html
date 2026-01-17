@@ -26,9 +26,9 @@
         <div class="header-actions">
 
     <!-- HELP -->
-    <button class="icon-btn" title="Help">
-        <span class="icon">❓</span>
-    </button>
+    <a href="{% url 'about' %}" class="icon-btn" title="About Us" aria-label="About Us">
+    <span class="icon">ℹ️</span>
+    </a>
 
     <!-- THEME TOGGLE -->
     <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
@@ -247,11 +247,38 @@
     {% csrf_token %}
 
     <!-- ✅ PUT SLIDER HERE (replace stars block) -->
-    <div class="rating-slider">
-      <input type="range" name="rating" min="0" max="5" step="0.1" value="4.5"
-             oninput="document.getElementById('rv-{{ order.id }}').textContent=this.value">
-      <span><b id="rv-{{ order.id }}">4.5</b>/5</span>
-    </div>
+    <div class="rating-stars-wrap" data-order="{{ order.id }}">
+  <!-- hidden real input that will be submitted -->
+  <input
+    type="range"
+    id="ratingInput-{{ order.id }}"
+    name="rating"
+    min="0"
+    max="5"
+    step="0.1"
+    value="4.5"
+    class="rating-hidden-range"
+  />
+
+  <!-- star UI -->
+  <div
+    class="stars-10"
+    id="stars-{{ order.id }}"
+    role="slider"
+    aria-label="Rating"
+    aria-valuemin="0"
+    aria-valuemax="5"
+    aria-valuenow="4.5"
+    tabindex="0"
+    data-target="ratingInput-{{ order.id }}"
+  >
+    <div class="stars-base" aria-hidden="true"><span class="stars-text">★★★★★</span></div>
+    <div class="stars-fill" aria-hidden="true"><span class="stars-text">★★★★★</span></div>
+  </div>
+
+  <span class="rating-value"><b id="rv-{{ order.id }}">4.5</b>/5</span>
+</div>
+
 
     <textarea name="review" placeholder="Write a review (optional)…"></textarea>
     <button class="rate-btn">Submit Review</button>
@@ -265,10 +292,10 @@
   <div class="rated-pill">
     <span class="rated-value">{{ order.rating|floatformat:1 }}</span>
 
-    <span class="rated-stars">
-      {% for i in "12345" %}
-        <span class="star {% if order.rating|floatformat:1 >= i %}filled{% endif %}">★</span>
-      {% endfor %}
+    <span class="rated-stars-precise" aria-label="Rated {{ order.rating|floatformat:1 }} out of 5">
+      <span class="stars-base" aria-hidden="true">★★★★★</span>
+      <span class="stars-fill" aria-hidden="true"
+            style="width: calc({{ order.rating|floatformat:1 }} * 20%);">★★★★★</span>
     </span>
   </div>
 
@@ -276,6 +303,7 @@
     <div class="review-text"><em>{{ order.review }}</em></div>
   {% endif %}
 {% endif %}
+
 
 
   <script>
@@ -457,6 +485,91 @@ document.addEventListener("click", function (e) {
   if (e.target === overlay) closeCancelModal();
 });
 
+function clamp(n, min, max){ return Math.min(max, Math.max(min, n)); }
+
+function setStars(el, value){
+  const fill = el.querySelector(".stars-fill");
+  const v = clamp(Math.round(value * 10) / 10, 0, 5); // 0.1 steps
+  const pct = (v / 5) * 100;
+
+  fill.style.width = pct + "%";
+
+  const inputId = el.dataset.target;
+  const input = document.getElementById(inputId);
+  if (input) input.value = v.toFixed(1);
+
+  const orderId = el.id.split("stars-")[1];
+  const rv = document.getElementById("rv-" + orderId);
+  if (rv) rv.textContent = v.toFixed(1);
+
+  el.setAttribute("aria-valuenow", v.toFixed(1));
+}
+
+function valueFromPointer(el, clientX){
+  const rect = el.getBoundingClientRect();
+  const x = clamp(clientX - rect.left, 0, rect.width);
+  const raw = (x / rect.width) * 5;          // 0..5
+  return Math.round(raw * 10) / 10;          // 0.1
+}
+
+function initStarRatings(){
+  document.querySelectorAll(".stars-10").forEach(el => {
+    // initial render from hidden input value
+    const input = document.getElementById(el.dataset.target);
+    const startVal = input ? parseFloat(input.value || "0") : 0;
+    setStars(el, startVal);
+
+    let dragging = false;
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setStars(el, valueFromPointer(el, x));
+    };
+
+    const onUp = () => { dragging = false; };
+
+    el.addEventListener("mousedown", (e) => {
+      dragging = true;
+      setStars(el, valueFromPointer(el, e.clientX));
+    });
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+
+    el.addEventListener("touchstart", (e) => {
+      dragging = true;
+      setStars(el, valueFromPointer(el, e.touches[0].clientX));
+    }, {passive:true});
+    window.addEventListener("touchmove", onMove, {passive:true});
+    window.addEventListener("touchend", onUp);
+
+    // click (also works without drag)
+    el.addEventListener("click", (e) => {
+      setStars(el, valueFromPointer(el, e.clientX));
+    });
+
+    // keyboard (0.1 steps)
+    el.addEventListener("keydown", (e) => {
+      const input = document.getElementById(el.dataset.target);
+      const cur = input ? parseFloat(input.value || "0") : 0;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setStars(el, cur + 0.1);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setStars(el, cur - 0.1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setStars(el, 0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setStars(el, 5);
+      }
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initStarRatings);
 </script>
 
 </body>

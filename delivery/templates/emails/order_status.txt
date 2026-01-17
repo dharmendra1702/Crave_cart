@@ -1,8 +1,13 @@
 Hi {{ user_name }},
 
-Your order #{{ order_id }} status is now: {{ status_label }}
+Your order status has been updated ✅
 
-Updated at: {{ updated_at }}
+Order ID: #{{ order_id }}
+Current Status: {{ status_label }}
+Updated At: {{ updated_at }}
+
+Track your order here:
+{{ site_url }}order_history
 
 Thanks,
-Crave Cart
+CraveCart

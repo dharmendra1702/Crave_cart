@@ -4,6 +4,7 @@ import random
 from django.shortcuts import render
 from django.utils.timezone import localtime
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -129,7 +130,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
 
-    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    rating = models.DecimalField(max_digits=3,decimal_places=1,null=True,blank=True,validators=[MinValueValidator(0), MaxValueValidator(5)])
     review = models.TextField(blank=True)
 
     @property

@@ -1,12 +1,28 @@
 Hello Admin,
 
-New order received!
+New order received 🚀
 
-Order ID: {{ order_id }}
+Order ID: #{{ order_id }}
 Customer: {{ user_name }}
 Customer Email: {{ user_email }}
 Payment ID: {{ payment_id }}
+Date: {{ order_date }}
+
+Items:
+{% for it in items %}
+- {{ it.name }} | Qty: {{ it.qty }} | Price: ₹{{ it.price }} | Line Total: ₹{{ it.line_total }}
+{% endfor %}
+
+Summary:
+Subtotal: ₹{{ subtotal }}
+GST: ₹{{ gst }}
+Delivery Fee: ₹{{ delivery_fee }}
+Coupon: {{ coupon_code }}
+Discount: - ₹{{ discount }}
 
 Total: ₹{{ total }}
 
-- CraveCart System
+Open admin panel:
+{{ admin_url }}
+
+— CraveCart System

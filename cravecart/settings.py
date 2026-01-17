@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     # third-party
     "cloudinary",
     "cloudinary_storage",
-    "anymail",
 ]
 
 # ------------------------------------------------------------
@@ -180,21 +179,17 @@ else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 # ------------------------------------------------------------
-# Email (Brevo via Anymail)
+# Email
 # ------------------------------------------------------------
-EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-ANYMAIL = {"BREVO_API_KEY": os.environ.get("BREVO_API_KEY", "")}
-
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "")
-ADMIN_ORDER_EMAIL = os.environ.get("ADMIN_ORDER_EMAIL", "")
-
-# (Optional) keep these if you also use SMTP somewhere; otherwise you can remove
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
-EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL", EMAIL_HOST_USER)
+SITE_URL = "https://crave-cart-82wd.onrender.com/"
 
 # ------------------------------------------------------------
 # Razorpay

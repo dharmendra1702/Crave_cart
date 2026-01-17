@@ -1,0 +1,640 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Us | CraveCart</title>
+  <link rel="stylesheet" href="{% static 'css/about.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
+</head>
+
+<body>
+    <header class="header">
+        <div class="brand">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
+            </a>
+        </div>
+        <div class="header-actions">
+
+    <!-- About -->
+    <a href="{% url 'about' %}" class="icon-btn" title="About Us" aria-label="About Us">
+    <span class="icon">ℹ️</span>
+    </a>
+
+    <!-- THEME TOGGLE -->
+    <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
+        <span class="icon" id="themeIcon">🌙</span>
+    </button>
+
+    <!-- PROFILE -->
+    <div class="profile-menu">
+        <button class="profile-avatar" onclick="toggleProfileMenu(event)">
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
+        </button>
+    </div>
+</div>
+    </header>
+  <main class="page">
+    <!-- Back button (fixed always) -->
+    <button type="button" class="btn btn-primary header-back" onclick="goBack()">← Back</button>
+
+    <!-- HERO -->
+    <section class="hero hero-pro">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="kicker"><span class="dot"></span>About CraveCart</div>
+
+          <h1 class="hero-title">
+            Premium food ordering,
+            <span class="grad">crafted for speed</span>.
+          </h1>
+
+          <p class="hero-sub">
+            CraveCart is a Django-based food delivery web application designed for smooth restaurant discovery,
+            clean menus, fast cart updates, secure ordering, and clear order status tracking.
+          </p>
+
+          <div class="hero-badges">
+            <div class="pill"><span class="pill-ic">⚡</span> Fast Ordering</div>
+            <div class="pill"><span class="pill-ic">🧠</span> Clean UX</div>
+            <div class="pill"><span class="pill-ic">🔒</span> Secure Access</div>
+            <div class="pill"><span class="pill-ic">✅</span> Reliable Flow</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-num">3</div>
+              <div class="stat-label">Core flows</div>
+              <div class="stat-sub">Browse · Cart · Checkout</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">2</div>
+              <div class="stat-label">Payment modes</div>
+              <div class="stat-sub">Online · COD</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">100%</div>
+              <div class="stat-label">Status clarity</div>
+              <div class="stat-sub">Placed → Delivered</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHOWCASE -->
+        <div class="hero-show" aria-hidden="true">
+          <div class="glass-slab">
+            <div class="slab-top">
+              <div class="slab-chip">LIVE</div>
+              <div class="slab-line"></div>
+              <div class="slab-dot"></div>
+            </div>
+
+            <div class="slab-cards">
+              <div class="mini-card">
+                <div class="mini-ic">🧾</div>
+                <div class="mini-txt">
+                  <div class="mini-title">Instant Summary</div>
+                  <div class="mini-sub">Cart → Total → Checkout</div>
+                </div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-ic">📍</div>
+                <div class="mini-txt">
+                  <div class="mini-title">Address Snapshot</div>
+                  <div class="mini-sub">Saved + default address</div>
+                </div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-ic">🔔</div>
+                <div class="mini-txt">
+                  <div class="mini-title">Email Updates</div>
+                  <div class="mini-sub">Placed / Status / Delivered</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slab-wave"></div>
+          </div>
+
+          <div class="orb orb-1"></div>
+          <div class="orb orb-2"></div>
+          <div class="orb orb-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STRIP -->
+    <section class="strip">
+      <div class="strip-card">
+        <div class="strip-ic">🧩</div>
+        <div>
+          <div class="strip-title">Built as a real-world full-stack system</div>
+          <div class="strip-sub">Order lifecycle · email notifications · admin operations · clean UI</div>
+        </div>
+      </div>
+      <div class="strip-card">
+        <div class="strip-ic">🛡️</div>
+        <div>
+          <div class="strip-title">Secure and reliable workflow</div>
+          <div class="strip-sub">Sessions · validations · safe totals · consistent updates</div>
+        </div>
+      </div>
+      <div class="strip-card">
+        <div class="strip-ic">⚙️</div>
+        <div>
+          <div class="strip-title">Performance-first UX</div>
+          <div class="strip-sub">Fast interactions · modern components · responsive layouts</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUES -->
+    <section class="wide">
+      <article class="card card-lg">
+        <div class="card-head">
+          <div class="card-title">Our Values</div>
+          <div class="card-tag">Principles</div>
+        </div>
+
+        <div class="value-grid">
+          <div class="value">
+            <div class="value-ic">🎯</div>
+            <div>
+              <div class="value-title">Clarity</div>
+              <div class="value-sub">Users always understand totals, status, and the next step.</div>
+            </div>
+          </div>
+
+          <div class="value">
+            <div class="value-ic">⚡</div>
+            <div>
+              <div class="value-title">Speed</div>
+              <div class="value-sub">Less friction across browsing, cart, and checkout.</div>
+            </div>
+          </div>
+
+          <div class="value">
+            <div class="value-ic">🔒</div>
+            <div>
+              <div class="value-title">Safety</div>
+              <div class="value-sub">Secure sessions and reliable server-side validation.</div>
+            </div>
+          </div>
+
+          <div class="value">
+            <div class="value-ic">🧱</div>
+            <div>
+              <div class="value-title">Stability</div>
+              <div class="value-sub">Strong order creation and status transitions without breaks.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">Product focus</div>
+          <div class="card-tag">Goals</div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-top">Checkout experience</div>
+            <div class="metric-val">Simple</div>
+            <div class="metric-sub">Minimal steps, clear confirmation, fewer drop-offs.</div>
+          </div>
+          <div class="metric">
+            <div class="metric-top">Order visibility</div>
+            <div class="metric-val">Clear</div>
+            <div class="metric-sub">Customers always know what’s happening.</div>
+          </div>
+          <div class="metric">
+            <div class="metric-top">Reliability</div>
+            <div class="metric-val">Stable</div>
+            <div class="metric-sub">Validations and controlled status transitions.</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- MAIN GRID -->
+    <section class="grid grid-pro">
+      <!-- LEFT -->
+      <article class="card card-lg">
+        <div class="card-head">
+          <div class="card-title">Vision</div>
+          <div class="card-tag">Platform</div>
+        </div>
+
+        <p class="card-text">
+          To become a trusted and user-friendly food delivery platform that helps people enjoy great meals quickly
+          while enabling local restaurants to grow through a simple digital ordering experience.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="split">
+          <div class="split-block">
+            <div class="card-title">Mission</div>
+            <ul class="list">
+              <li>Seamless ordering journey with quick checkout and clear tracking.</li>
+              <li>Reliability through clean engineering practices and secure handling of user data.</li>
+              <li>Continuous improvements in performance and user experience.</li>
+            </ul>
+          </div>
+
+          <div class="split-block">
+            <div class="card-title">What makes it strong</div>
+
+            <div class="feature">
+              <div class="feature-icon">⚡</div>
+              <div>
+                <div class="feature-name">Frictionless flow</div>
+                <div class="feature-desc">Smooth cart updates and consistent totals.</div>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="feature-icon">🛡️</div>
+              <div>
+                <div class="feature-name">Stable backend</div>
+                <div class="feature-desc">Reliable order creation and status updates.</div>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="feature-icon">📩</div>
+              <div>
+                <div class="feature-name">Automated email</div>
+                <div class="feature-desc">Customer + admin notifications for order events.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">What you can do on CraveCart</div>
+          <div class="card-tag">Features</div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feat">
+            <div class="feat-ic">🍽️</div>
+            <div class="feat-title">Browse Restaurants</div>
+            <div class="feat-sub">Explore restaurants, cuisines, and menus with clear details.</div>
+          </div>
+
+          <div class="feat">
+            <div class="feat-ic">🛒</div>
+            <div class="feat-title">Smart Cart</div>
+            <div class="feat-sub">Instant add/remove, quantity updates, and accurate totals.</div>
+          </div>
+
+          <div class="feat">
+            <div class="feat-ic">📦</div>
+            <div class="feat-title">Track Orders</div>
+            <div class="feat-sub">Simple status flow: placed → preparing → out → delivered.</div>
+          </div>
+
+          <div class="feat">
+            <div class="feat-ic">👤</div>
+            <div class="feat-title">Profile & History</div>
+            <div class="feat-sub">Manage address, view order history, and repeat orders quickly.</div>
+          </div>
+        </div>
+
+        <!-- EXTRA LONG CONTENT -->
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">How the system behaves</div>
+          <div class="card-tag">Real workflow</div>
+        </div>
+
+        <div class="long-grid">
+          <div class="long">
+            <div class="long-h">Cart accuracy</div>
+            <p class="long-p">
+              Cart totals are derived from server-side values to avoid mismatch. Quantity updates stay consistent across pages,
+              and checkout always reflects the latest cart state.
+            </p>
+          </div>
+          <div class="long">
+            <div class="long-h">Checkout confidence</div>
+            <p class="long-p">
+              Checkout focuses on clarity: delivery address, item list, final amount, and chosen payment mode are displayed together
+              so users can confirm before placing the order.
+            </p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">User journeys</div>
+          <div class="card-tag">Customer + admin</div>
+        </div>
+
+        <div class="journey">
+          <div class="journey-block">
+            <div class="journey-title">Customer journey</div>
+            <ol class="steps">
+              <li><b>Discover</b> restaurants and explore menus.</li>
+              <li><b>Add items</b> and update quantities instantly.</li>
+              <li><b>Checkout</b> with validated address and clear totals.</li>
+              <li><b>Pay online</b> or choose COD with correct status.</li>
+              <li><b>Track</b> the order through each stage.</li>
+              <li><b>Receive emails</b> confirming actions and updates.</li>
+            </ol>
+          </div>
+
+          <div class="journey-block">
+            <div class="journey-title">Admin operations</div>
+            <ol class="steps">
+              <li><b>Receive orders</b> with full item breakdown.</li>
+              <li><b>Update status</b> through controlled transitions.</li>
+              <li><b>Notify customers</b> automatically through email.</li>
+              <li><b>Maintain history</b> for accountability and tracking.</li>
+              <li><b>Handle COD</b> payment status correctly on delivery.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">Reliability & safety</div>
+          <div class="card-tag">Engineering</div>
+        </div>
+
+        <div class="trust-grid">
+          <div class="trust">
+            <div class="trust-ic">🧾</div>
+            <div>
+              <div class="trust-h">Server-side totals</div>
+              <div class="trust-p">Avoids client manipulation and maintains consistent totals.</div>
+            </div>
+          </div>
+
+          <div class="trust">
+            <div class="trust-ic">🛡️</div>
+            <div>
+              <div class="trust-h">Secure sessions</div>
+              <div class="trust-p">Validates user access and reduces unwanted actions.</div>
+            </div>
+          </div>
+
+          <div class="trust">
+            <div class="trust-ic">🔁</div>
+            <div>
+              <div class="trust-h">Stable order lifecycle</div>
+              <div class="trust-p">Each status change is consistent and predictable.</div>
+            </div>
+          </div>
+
+          <div class="trust">
+            <div class="trust-ic">✅</div>
+            <div>
+              <div class="trust-h">COD correctness</div>
+              <div class="trust-p">COD stays pending until delivered, then becomes paid.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">Notifications & communication</div>
+          <div class="card-tag">Emails</div>
+        </div>
+
+        <ul class="bullets">
+          <li><b>Customer confirmation</b> after placing an order.</li>
+          <li><b>Admin notification</b> with order summary and contact info.</li>
+          <li><b>Status updates</b> on key transitions to reduce confusion.</li>
+          <li><b>Delivery confirmation</b> to close the loop and build trust.</li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <div class="card-head">
+          <div class="card-title">Roadmap</div>
+          <div class="card-tag">Next</div>
+        </div>
+
+        <div class="roadmap">
+          <div class="rm">
+            <div class="rm-h">Better discovery</div>
+            <div class="rm-p">Filters, cuisine categories, ratings-based sorting, and search.</div>
+          </div>
+          <div class="rm">
+            <div class="rm-h">Improved tracking</div>
+            <div class="rm-p">More visible progress UI and richer order timeline.</div>
+          </div>
+          <div class="rm">
+            <div class="rm-h">Offers & loyalty</div>
+            <div class="rm-p">Coupons, rewards, referral system, and repeat-order shortcuts.</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- RIGHT -->
+      <aside class="stack">
+        <!-- Founder: FLOAT layout so text occupies empty space -->
+        <article class="card founder-card">
+          <div class="card-head">
+            <div class="card-title">Founder</div>
+            <div class="card-tag">Profile</div>
+          </div>
+
+          <div class="founder-float">
+            <div class="founder-media">
+              <img src="{% static 'images/dr.jpeg' %}" alt="Dharmendra Reddy M S">
+            </div>
+
+            <div class="founder-name">Dharmendra Reddy M S</div>
+            <div class="founder-role">Full-Stack Developer</div>
+
+            <p class="founder-bio">
+              I created <b>CraveCart</b> to demonstrate a complete food ordering workflow that feels clean and reliable.
+              The focus is on real product behavior: restaurant discovery, menu browsing, cart accuracy, checkout,
+              online payments/COD, and consistent order tracking.
+            </p>
+
+            <p class="founder-bio">
+              While building CraveCart, my priority was to keep the experience fast for users and predictable for admins.
+              Totals are validated on the server, order statuses follow a stable lifecycle, and email notifications confirm
+              key events so users always know what happened.
+            </p>
+
+            <p class="founder-bio">
+              This project also reflects how a production-style ordering system should behave: clear UI for decision-making,
+              clean status communication, and controlled operations for maintaining order history.
+            </p>
+
+            <div class="founder-links">
+              <a class="btn btn-primary btn-glass" href="https://drive.google.com/file/d/1hzZ8sLUgkKvSlK2-SqAiuzEAFy4Sybpl/view?usp=drive_link" target="_blank" rel="noreferrer">Resume</a>
+              <a class="btn btn-ghost" href="https://www.linkedin.com/in/dharmendra-reddy-m-s-8289211b1/" target="_blank" rel="noreferrer">LinkedIn</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Contact -->
+        <article class="card contact-card">
+          <div class="card-head">
+            <div class="card-title">Contact</div>
+            <div class="card-tag">Support</div>
+          </div>
+
+          <div class="info">
+            <div class="info-row"><b>Email:</b> cravecartdr@gmail.com</div>
+            <div class="info-row"><b>Address:</b> Bangalore, India</div>
+            <div class="info-row muted">Fill the form and we’ll reach out.</div>
+          </div>
+
+          <form id="contactForm" method="post" action="{% url 'contact_submit' %}">
+            {% csrf_token %}
+
+            <div class="field">
+              <label for="name">Full Name</label>
+              <input id="name" name="name" type="text" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required />
+            </div>
+
+            <div class="field">
+              <label for="phone">Mobile Number</label>
+              <input id="phone" name="phone" type="tel" placeholder="Enter your mobile number" pattern="[0-9]{10}" maxlength="10" required />
+            </div>
+
+            <div class="field">
+              <label for="subject">Subject</label>
+              <input id="subject" name="subject" type="text" required />
+            </div>
+
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-glass" type="submit">Send Message</button>
+              <span class="hint">We’ll email your message to cravecartdr@gmail.com</span>
+            </div>
+          </form>
+        </article>
+
+        <!-- FAQ -->
+        <article class="card faq-card">
+          <div class="card-head">
+            <div class="card-title">FAQ</div>
+            <div class="card-tag">Quick answers</div>
+          </div>
+
+          <div class="faq">
+            <details class="qa">
+              <summary>How does COD work?</summary>
+              <p>COD orders are marked <b>PENDING</b> until delivered, then updated to <b>PAID</b> automatically.</p>
+            </details>
+
+            <details class="qa">
+              <summary>Will I get order emails?</summary>
+              <p>Yes. Customer + admin emails are sent after placing the order and when status changes.</p>
+            </details>
+
+            <details class="qa">
+              <summary>Is the site responsive?</summary>
+              <p>Yes. The layout adapts for mobile screens and keeps actions accessible.</p>
+            </details>
+
+            <details class="qa">
+              <summary>Can I contact without an account?</summary>
+              <p>Yes. You can submit the contact form as a guest as well.</p>
+            </details>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> CraveCart. All rights reserved.
+  </footer>
+
+  <!-- POPUP -->
+  <div id="popupOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <div id="popupModal" class="modal">
+      <div class="modal-head">
+        <div>
+          <h3 id="popupTitle" class="modal-title">
+            <span id="popupIcon" class="modal-icon">✓</span>
+            <span id="popupHeading">Submitted</span>
+          </h3>
+          <p id="popupMessage">Your message was sent successfully.</p>
+        </div>
+
+        <button type="button" class="btn btn-ghost" id="popupCloseTop" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="popupOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/theme.js' %}"></script>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const overlay = document.getElementById("popupOverlay");
+    const modal = document.getElementById("popupModal");
+    const icon = document.getElementById("popupIcon");
+    const heading = document.getElementById("popupHeading");
+    const message = document.getElementById("popupMessage");
+    const closeTop = document.getElementById("popupCloseTop");
+    const okBtn = document.getElementById("popupOkBtn");
+
+    function openPopup(type, title, msg){
+      modal.classList.remove("success", "error");
+      modal.classList.add(type);
+      icon.textContent = (type === "success") ? "✓" : "!";
+      heading.textContent = title;
+      message.textContent = msg;
+      overlay.classList.add("show");
+      okBtn.focus();
+    }
+    function closePopup(){ overlay.classList.remove("show"); }
+    closeTop.addEventListener("click", closePopup);
+    okBtn.addEventListener("click", closePopup);
+    overlay.addEventListener("click", (e)=>{ if(e.target===overlay) closePopup(); });
+    document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && overlay.classList.contains("show")) closePopup(); });
+
+    const params = new URLSearchParams(window.location.search);
+    const sent = params.get("sent");
+    if (sent === "1") {
+      openPopup("success","Message Sent","Thanks for reaching out! We received your message and will get back to you soon.");
+      params.delete("sent");
+      window.history.replaceState({}, "", window.location.pathname + (params.toString() ? "?" + params.toString() : ""));
+    } else if (sent === "0") {
+      openPopup("error","Not Sent","Sorry, your message could not be sent. Please try again.");
+      params.delete("sent");
+      window.history.replaceState({}, "", window.location.pathname + (params.toString() ? "?" + params.toString() : ""));
+    }
+
+    function goBack(){
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "/";
+    }
+  </script>
+</body>
+</html>

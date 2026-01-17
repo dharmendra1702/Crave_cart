@@ -1,12 +1,27 @@
 Dear {{ user_name }},
 
-Your order has been placed successfully.
+Your order has been placed successfully ✅
 
-Order ID: {{ order_id }}
+Order ID: #{{ order_id }}
 Payment ID: {{ payment_id }}
 Date: {{ order_date }}
 
+Items:
+{% for it in items %}
+- {{ it.name }} | Qty: {{ it.qty }} | Price: ₹{{ it.price }} | Line Total: ₹{{ it.line_total }}
+{% endfor %}
+
+Summary:
+Subtotal: ₹{{ subtotal }}
+GST: ₹{{ gst }}
+Delivery Fee: ₹{{ delivery_fee }}
+Coupon: {{ coupon_code }}
+Discount: - ₹{{ discount }}
+
 Total: ₹{{ total }}
+
+View your order:
+{{ site_url }}order_history
 
 Thank you,
 CraveCart
