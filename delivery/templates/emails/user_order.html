@@ -5,54 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Order Placed</title>
 </head>
+
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;">
   <div style="max-width:720px;margin:0 auto;padding:24px;">
     <!-- Header -->
     <div style="background:#111827;color:#fff;padding:18px 20px;border-radius:14px 14px 0 0;">
-      <div style="font-size:18px;font-weight:700;letter-spacing:.2px;">CraveCart</div>
-      <div style="font-size:12px;opacity:.85;margin-top:4px;">Order Confirmation</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="{% static 'images/logoo.png' %}"
+            alt="CraveCart"
+            width="28"
+            height="28"
+            style="display:block;border-radius:8px;outline:none;text-decoration:none;" />
+    <div style="font-size:18px;font-weight:800;letter-spacing:.2px;line-height:1;">
+    CraveCart
+  </div>
+</div>
+
+      <div style="font-size:12px;opacity:.88;margin-top:4px;">Order Confirmation</div>
     </div>
 
     <!-- Card -->
     <div style="background:#ffffff;border-radius:0 0 14px 14px;box-shadow:0 6px 18px rgba(17,24,39,.08);padding:22px;">
-      <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:6px;">
+      <div style="font-size:18px;font-weight:800;color:#111827;margin-bottom:6px;line-height:1.4;">
         Dear {{ user_name }},
       </div>
-      <div style="color:#374151;font-size:14px;line-height:1.6;">
+
+      <div style="color:#374151;font-size:14px;line-height:1.7;">
         Your order has been placed successfully. We’ll notify you when it’s out for delivery.
       </div>
 
-      <!-- Order summary strip -->
+      <!-- Meta strip -->
       <div style="margin-top:16px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:12px;padding:14px;">
-        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;">
-          <div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;">
+          <div style="min-width:200px;flex:1;">
             <div style="font-size:12px;color:#6b7280;">Order ID</div>
-            <div style="font-size:14px;color:#111827;font-weight:700;">#{{ order_id }}</div>
+            <div style="font-size:14px;color:#111827;font-weight:800;margin-top:2px;">#{{ order_id }}</div>
           </div>
-          <div>
+
+          <div style="min-width:200px;flex:1;">
             <div style="font-size:12px;color:#6b7280;">Payment ID</div>
-            <div style="font-size:14px;color:#111827;font-weight:700;">{{ payment_id }}</div>
+            <div style="font-size:14px;color:#111827;font-weight:800;margin-top:2px;">{{ payment_id }}</div>
           </div>
-          <div>
+
+          <div style="min-width:200px;flex:1;">
             <div style="font-size:12px;color:#6b7280;">Date</div>
-            <div style="font-size:14px;color:#111827;font-weight:700;">{{ order_date }}</div>
+            <div style="font-size:14px;color:#111827;font-weight:800;margin-top:2px;">{{ order_date }}</div>
           </div>
         </div>
       </div>
 
       <!-- Items -->
       <div style="margin-top:18px;">
-        <div style="font-size:14px;color:#111827;font-weight:800;margin-bottom:10px;">Items</div>
+        <div style="font-size:14px;color:#111827;font-weight:900;margin-bottom:10px;">Items</div>
 
         {% for it in items %}
-        <div style="display:flex;gap:12px;align-items:flex-start;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:10px;">
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:700;color:#111827;">{{ it.name }}</div>
-            <div style="font-size:12px;color:#6b7280;margin-top:4px;">
-              Qty: {{ it.qty }} • Price: ₹{{ it.price }}
+        <div style="display:flex;gap:12px;align-items:flex-start;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:800;color:#111827;line-height:1.4;">
+              {{ it.name }}
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;line-height:1.5;">
+              Qty: {{ it.qty }} &nbsp;•&nbsp; Price: ₹{{ it.price }}
             </div>
           </div>
-          <div style="font-size:14px;font-weight:800;color:#111827;">
+          <div style="font-size:14px;font-weight:900;color:#111827;white-space:nowrap;">
             ₹{{ it.line_total }}
           </div>
         </div>
@@ -61,43 +77,34 @@
 
       <!-- Totals -->
       <div style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:14px;">
-        <div style="display:flex;justify-content:space-between;color:#374151;font-size:13px;margin-bottom:6px;">
-          <span>Subtotal</span><span>₹{{ subtotal }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;color:#374151;font-size:13px;margin-bottom:8px;">
+          <span>Subtotal</span><span style="white-space:nowrap;">₹{{ subtotal }}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;color:#374151;font-size:13px;margin-bottom:6px;">
-          <span>GST</span><span>₹{{ gst }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;color:#374151;font-size:13px;margin-bottom:8px;">
+          <span>GST</span><span style="white-space:nowrap;">₹{{ gst }}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;color:#374151;font-size:13px;margin-bottom:6px;">
-          <span>Delivery Fee</span><span>₹{{ delivery_fee }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;color:#374151;font-size:13px;margin-bottom:8px;">
+          <span>Delivery Fee</span><span style="white-space:nowrap;">₹{{ delivery_fee }}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;color:#374151;font-size:13px;margin-bottom:6px;">
-          <span>Coupon</span><span>{{ coupon_code }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;color:#374151;font-size:13px;margin-bottom:8px;">
+          <span>Coupon</span><span style="white-space:nowrap;">{{ coupon_code }}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;color:#374151;font-size:13px;margin-bottom:10px;">
-          <span>Discount</span><span>- ₹{{ discount }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;color:#374151;font-size:13px;margin-bottom:10px;">
+          <span>Discount</span><span style="white-space:nowrap;">- ₹{{ discount }}</span>
         </div>
 
-        <div style="display:flex;justify-content:space-between;background:#111827;color:#fff;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:800;">
-          <span>Total</span><span>₹{{ total }}</span>
+        <div style="display:flex;justify-content:space-between;gap:12px;background:#111827;color:#fff;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:900;">
+          <span>Total</span><span style="white-space:nowrap;">₹{{ total }}</span>
         </div>
       </div>
 
-      <!-- CTA -->
-      <div style="margin-top:16px;text-align:center;">
-        <a href="{% url 'order_history' %}"
-           style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700;font-size:14px;">
-          View Order
-        </a>
-      </div>
-
-      <!-- Footer -->
-      <div style="margin-top:18px;color:#6b7280;font-size:12px;line-height:1.6;">
-        If you did not place this order, please contact support immediately.<br/>
+      <div style="margin-top:18px;color:#6b7280;font-size:12px;line-height:1.7;">
+        If you did not place this order, please contact support immediately.<br />
         <b>CraveCart</b> • Thank you for ordering with us.
       </div>
     </div>
 
-    <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:10px;">
+    <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:10px;line-height:1.5;">
       © {{ year }} CraveCart. All rights reserved.
     </div>
   </div>
