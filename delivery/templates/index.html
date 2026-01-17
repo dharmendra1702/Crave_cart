@@ -47,14 +47,7 @@
     <!-- PROFILE -->
     <div class="profile-menu">
         <button class="profile-avatar" onclick="toggleProfileMenu(event)">
-            <span class="icon">
-                <img
-                src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
-                alt="Profile"
-                class="nav-avatar-img"
-                >
-
-            </span>
+            <img src="{% static 'images/profile.png' %}" alt="Profile">
         </button>
 
         <!-- DROPDOWN -->
@@ -62,23 +55,15 @@
 
             <!-- USER INFO -->
             <div class="profile-header">
-                <img
-                    src="{% if nav_profile.profile_photo %}{{ nav_profile.profile_photo.url }}{% else %}{% static 'images/profile.png' %}{% endif %}"
-                    class="profile-pic"
-                    alt="User"
-                >
-                <div class="profile-meta">
-                    <strong class="profile-name">{{ nav_user.username|capfirst }}</strong>
+                <img src="{% static 'images/profile.png' %}" class="profile-pic">
+                <div>
+                    <strong>{{ username|capfirst }}</strong>
                 </div>
-                </div>
-
-
-
+            </div>
             <div class="dropdown-divider"></div>
 
-            <!-- MENU -->
-                <a href="{% url 'open_signin' %}" class="dropdown-item">🔐 Sign In</a>
-                <a href="{% url 'open_signup' %}" class="dropdown-item">📝 Sign Up</a>
+            <a href="{% url 'open_signup' %}" class="dropdown-item">Sign Up</a>
+            <a href="{% url 'open_signin' %}" class="dropdown-item">Sign In</a>
         </div>
     </div>
 </div>
