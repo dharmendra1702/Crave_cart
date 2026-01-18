@@ -79,6 +79,7 @@ urlpatterns = [
     path('', views.index, name='home'),
     path("contact/", views.contact_submit, name="contact_submit"),
     path("about/", views.about, name="about"),
+    path("resume/", views.resume_page, name="resume"),
 
     # Auth
     path('open_signin', views.open_signin, name='open_signin'),

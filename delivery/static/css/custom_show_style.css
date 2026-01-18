@@ -1000,9 +1000,12 @@ body[data-theme="dark"] .menu-row {
 .qty-count {
     font-weight: 600;
     font-size: 16px;
-    color: #ffffff;
+    color: #000000;
 }
 
+.dark-them .qty-count{
+    color: white;
+}
 .hidden {
     display: none;
 }

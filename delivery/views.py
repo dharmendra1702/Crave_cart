@@ -15,6 +15,8 @@ from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
+from django.shortcuts import render
+
 
 
 
@@ -29,6 +31,9 @@ def index(request):
     
 def about(request):
     return render(request, "about.html")   
+
+def resume_page(request):
+    return render(request, "resume.html")
 
 def open_signin(request):
     #Go to sign in page
