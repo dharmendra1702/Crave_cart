@@ -9,6 +9,13 @@
     <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
     <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    .btn.primary {
+    background: var(--primary);
+    color: var(--bg);
+}
+}
+</style>
 </head>
 
 <body>
@@ -94,7 +101,7 @@
                 <input type="text" name="mobile" required>
 
                 <label>Address</label>
-                <textarea name="address" rows="3" required></textarea>
+                <textarea class = "add" name="address" rows="3" required></textarea>
 
                 <button type="submit" class="btn primary full-width">
                     Sign Up

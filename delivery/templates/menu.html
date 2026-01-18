@@ -10,7 +10,6 @@
 
     <link rel="icon" href="{% static 'images/faviconn.png' %}">
     <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
-    
     <link rel="stylesheet" href="{% static 'css/update_restaurant.css' %}">
 </head>
 <style>
@@ -39,8 +38,12 @@
     min-width: 20px;
     text-align: center;
     font-weight: bold;
+    color: #fff;
 }
 
+[data-theme="dark"] .qty-count {
+    color: #000;
+}
 .hidden {
     display: none !important;
 }
@@ -392,7 +395,7 @@ body[data-theme="dark"] .coupon-modal {
 <!-- Header -->
     <header class="header">
         <div class="brand">
-            <a href="{% url 'home' %}" class="logo-link">
+            <a href="{% url 'restaurants' %}" class="logo-link">
                 <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
             </a>
         </div>
@@ -460,7 +463,7 @@ body[data-theme="dark"] .coupon-modal {
 
             <!-- MENU -->
                 <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
-                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
+                <a href="{% url 'resturants' %}" class="dropdown-item">🏠 Home</a>
                 <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
 
             <div class="dropdown-divider"></div>
@@ -574,7 +577,7 @@ body[data-theme="dark"] .coupon-modal {
     {% endif %}
 
     <div class="back-center">
-        <a href="{% url 'open_customer_show_restaurants' %}" class="btn outline">
+        <a href="{% url 'resturants' %}" class="btn outline">
             ← Back to Restaurants
         </a>
     </div>

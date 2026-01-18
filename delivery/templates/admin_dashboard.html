@@ -8,15 +8,30 @@
     <link rel="icon" type="image/png" href="{% static 'images/faviconn.png' %}">
     <link rel="stylesheet" href="{% static 'css/sign_style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        .btn.logout {
+            border: 1px solid var(--border);
+            color: var(--bg);
+            color: #fff;
+            background-color: #000;
+        }
+
+        body[data-theme="dark"] .btn.logout {
+            color: #000;
+            background-color: #fff;
+        }
+    </style>
 </head>
 
 <body>
 <div class="page">
 
+
 <!-- ================= HEADER ================= -->
 <header class="header">
     <div class="brand">
-        <a href="{% url 'home' %}" class="logo-link">
+        <a href="{% url 'admin_dashboard' %}" class="logo-link">
             <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
         </a>
     </div>
@@ -120,7 +135,7 @@
         <h3>Confirm Logout</h3>
         <p>Are you sure you want to log out?</p>
 
-        <button class="btn primary full-width" onclick="confirmLogout()">
+        <button class="btn logout full-width" onclick="confirmLogout()">
             Yes, Log Me Out
         </button>
     </div>

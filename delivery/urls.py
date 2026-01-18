@@ -29,8 +29,8 @@
 #     path('open_update_menu/<int:restaurant_id>', views.open_update_menu, name='open_update_menu'), 
 #     path('delete_item/<int:item_id>/<int:restaurant_id>',views.delete_item,name='delete_item'),
 #     path('update_menu/<int:restaurant_id>', views.update_menu, name='update_menu'),
-#     path('view_menu/<int:restaurant_id>/', views.view_menu, name='view_menu'),
-#     path('open_customer_show_restaurants',views.open_customer_show_restaurants,name='open_customer_show_restaurants'),
+#     path('menu/<int:restaurant_id>/', views.menu, name='menu'),
+#     path('restaurants',views.restaurants,name='restaurants'),
 #     path('open_update_item/<int:item_id>/<int:restaurant_id>',views.open_update_item,name='open_update_item'),
 #     path("add_to_cart/<int:item_id>/", views.add_to_cart),
 #     path("decrease_cart/<int:item_id>/", views.decrease_cart_item),
@@ -123,10 +123,10 @@ urlpatterns = [
     path('update_menu/<int:restaurant_id>', views.update_menu, name='update_menu'),
     path('open_update_item/<int:item_id>/<int:restaurant_id>', views.open_update_item, name='open_update_item'),
     path('delete_item/<int:item_id>/<int:restaurant_id>', views.delete_item, name='delete_item'),
-    path('view_menu/<int:restaurant_id>/', views.view_menu, name='view_menu'),
+    path('menu/<int:restaurant_id>/', views.menu, name='menu'),
 
     # Customer
-    path('open_customer_show_restaurants', views.open_customer_show_restaurants, name='open_customer_show_restaurants'),
+    path('restaurants', views.restaurants, name='restaurants'),
 
     # Cart
     path("add_to_cart/<int:item_id>/", views.add_to_cart),

@@ -8,6 +8,45 @@
     {% load static %}
     <link rel="icon" href="{% static 'images/faviconn.png' %}">
     <link rel="stylesheet" href="{% static 'css/custom_show_style.css' %}">
+    <style>
+        
+.header-back{
+  position: absolute !important;
+  top: 18px !important;
+  right: 18px !important;
+  /* z-index: 999999 !important; */
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+/* Back button theme fix (works for both light + dark) */
+.header-back.btn-primary{
+  border-radius: 16px;
+  padding: 12px 18px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* LIGHT theme look */
+body:not([data-theme="dark"]) .header-back.btn-primary{
+  color: #0b1220;
+  background: rgba(255,255,255,.35);
+  border: 1px solid rgba(16,24,40,.18);
+  box-shadow: 0 14px 40px rgba(2,6,23,.12);
+}
+
+/* DARK theme look */
+body[data-theme="dark"] .header-back.btn-primary{
+  color: #f5f5f5;
+  background: rgba(20,20,20,.35);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 14px 44px rgba(0,0,0,.45);
+}
+
+@media (max-width: 600px){
+    .header-back{ top: 12px !important; right: 12px !important; }
+}
+    </style>
 </head>
 
 <body>
@@ -16,7 +55,7 @@
     <!-- Header -->
     <header class="header">
         <div class="brand">
-            <a href="{% url 'home' %}" class="logo-link">
+            <a href="{% url 'restaurants' %}" class="logo-link">
                 <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
             </a>
         </div>
@@ -84,7 +123,7 @@
 
             <!-- MENU -->
                 <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
-                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
+                <a href="{% url 'restaurants' %}" class="dropdown-item">🏠 Home</a>
                 <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
 
             <div class="dropdown-divider"></div>
@@ -102,6 +141,8 @@
 
     <!-- Main -->
     <main class="content content-top menu-page">
+        <!-- Back button (fixed always) -->
+    {% comment %} <button type="button" class="btn btn-primary header-back" onclick="goBack()">← Back</button> {% endcomment %}
 
     <div class="restaurant-container">
 
@@ -137,7 +178,7 @@
                 <!-- ACTIONS -->
                 <div class="restaurant-actions">
 
-                    <a href="{% url 'view_menu' r.id %}">
+                    <a href="{% url 'menu' r.id %}">
                         <button class="btn small primary">📋 Menu</button>
                     </a>
 

@@ -101,7 +101,7 @@ def signin(request):
         if user.username.lower() == "admin":
             return redirect("admin_dashboard")
 
-        return redirect("open_customer_show_restaurants")
+        return redirect("restaurants")
 
     return render(request, "signin.html")
 
@@ -298,7 +298,7 @@ def delete_item(request, item_id, restaurant_id):
     return redirect('open_update_menu', restaurant_id=restaurant_id)
 
 @ensure_csrf_cookie
-def view_menu(request, restaurant_id):
+def menu(request, restaurant_id):
     username = request.session.get("username")
     if not username:
         return redirect("signin")
@@ -315,18 +315,15 @@ def view_menu(request, restaurant_id):
         for ci in CartItem.objects.filter(cart=cart):
             cart_quantities[ci.item_id] = ci.quantity
 
-    return render(request, "view_menu.html", {
+    return render(request, "menu.html", {
         "restaurant": restaurant,
         "itemList": itemList,   # ✅ FIXED
         "cart_quantities": cart_quantities
     })
 
 
-
-
-
 @ensure_csrf_cookie
-def open_customer_show_restaurants(request):
+def restaurants(request):
     username = request.session.get("username")
     if not username:
         return redirect("signin")

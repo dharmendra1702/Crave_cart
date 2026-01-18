@@ -389,6 +389,7 @@ body[data-theme="dark"] .auth-form input {
     color: var(--text);
 }
 
+
 .auth-switch {
     margin-top: 18px;
     font-size: 14px;
@@ -429,6 +430,7 @@ body[data-theme="dark"] .logo-link:hover .logo {
     font-size: 42px;
     margin-bottom: 10px;
 }
+
 
 .content p {
     color: var(--muted);
@@ -498,3 +500,30 @@ body[data-theme="dark"] .logout-modal {
     text-align: center;
 }
 
+/* Make textarea follow theme (light + dark) */
+.auth-form textarea,
+.auth-form textarea.add {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Placeholder color */
+.auth-form textarea::placeholder {
+  color: var(--muted);
+}
+
+/* If your dark theme is applied using a class like .dark on body/html */
+.dark .auth-form textarea,
+.dark .auth-form textarea.add {
+  background: rgba(30,30,30,0.6);   /* or use a dark variable like var(--input-bg) */
+  color: #e5e7eb;
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .auth-form textarea,
+[data-theme="dark"] .auth-form textarea.add {
+  background: rgba(30,30,30,0.6);
+  color: #e5e7eb;
+  border: 1px solid var(--border);
+}

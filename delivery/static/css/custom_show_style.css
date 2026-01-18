@@ -1003,7 +1003,7 @@ body[data-theme="dark"] .menu-row {
     color: #000000;
 }
 
-.dark-them .qty-count{
+body[data-theme="dark"] .qty-count{
     color: white;
 }
 .hidden {

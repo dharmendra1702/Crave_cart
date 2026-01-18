@@ -456,7 +456,7 @@ body[data-theme="dark"] .logout-modal {
 <!-- Header -->
     <header class="header">
         <div class="brand">
-            <a href="{% url 'home' %}" class="logo-link">
+            <a href="{% url 'restaurants' %}" class="logo-link">
                 <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
             </a>
         </div>
@@ -524,7 +524,7 @@ body[data-theme="dark"] .logout-modal {
 
             <!-- MENU -->
                 <a href="{% url 'profile'%}" class="dropdown-item">👤 My Profile</a>
-                <a href="{% url 'open_customer_show_restaurants' %}" class="dropdown-item">🏠 Home</a>
+                <a href="{% url 'restaurants' %}" class="dropdown-item">🏠 Home</a>
                 <a href="{% url 'order_history' %}" class="dropdown-item">🛒 Order History</a>
 
             <div class="dropdown-divider"></div>
@@ -647,7 +647,7 @@ body[data-theme="dark"] .logout-modal {
 <div class="empty-cart">
     <h2>Your cart is empty</h2>
     <p>Add something tasty 🍔</p>
-    <a href="{% url 'open_customer_show_restaurants' %}" class="browse-btn">
+    <a href="{% url 'restaurants' %}" class="browse-btn">
         Browse Restaurants
     </a>
 </div>

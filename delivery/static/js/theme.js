@@ -242,4 +242,7 @@ function toggleItems(id) {
   document.getElementById("items-" + id).classList.toggle("open");
 }
 
-
+function goBack(){
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "/";
+    }

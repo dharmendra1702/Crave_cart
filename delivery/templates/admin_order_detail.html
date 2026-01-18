@@ -174,7 +174,11 @@ header.header {
   margin: 8px 0;
 }
 
-
+.card-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 
 </style>
@@ -185,7 +189,7 @@ header.header {
 <!-- ================= HEADER ================= -->
 <header class="header">
     <div class="brand">
-        <a href="{% url 'home' %}" class="logo-link">
+        <a href="{% url 'admin_dashboard' %}" class="logo-link">
             <img src="{% static 'images/logoo.png' %}" alt="Crave Cart Logo" class="logo">
         </a>
     </div>
@@ -236,7 +240,7 @@ header.header {
   <div class="card">
 
     <!-- HEADER -->
-    <div class="header">
+    <div class="card-header">
       <div class="order-id">
         Order #{{ order.order_number }}
       </div>
