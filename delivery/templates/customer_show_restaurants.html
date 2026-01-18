@@ -46,6 +46,16 @@ body[data-theme="dark"] .header-back.btn-primary{
 @media (max-width: 600px){
     .header-back{ top: 12px !important; right: 12px !important; }
 }
+
+.header-back{
+  position: absolute !important;
+  top: 18px !important;
+  right: 18px !important;
+  z-index: 999999 !important; /* ✅ enable */
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
     </style>
 </head>
 
@@ -142,7 +152,7 @@ body[data-theme="dark"] .header-back.btn-primary{
     <!-- Main -->
     <main class="content content-top menu-page">
         <!-- Back button (fixed always) -->
-    {% comment %} <button type="button" class="btn btn-primary header-back" onclick="goBack()">← Back</button> {% endcomment %}
+    <button type="button" class="btn btn-primary header-back" onclick="goBack()">← Back</button>
 
     <div class="restaurant-container">
 
