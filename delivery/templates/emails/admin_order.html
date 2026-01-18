@@ -8,20 +8,17 @@
 
 <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;">
   <div style="max-width:720px;margin:0 auto;padding:24px;">
+
     <!-- Header -->
     <div style="background:#111827;color:#fff;padding:18px 20px;border-radius:14px 14px 0 0;">
-      <div style="background:#111827;color:#fff;padding:18px 20px;border-radius:14px 14px 0 0;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <img src="{% static 'images/logoo.png' %}"
-            alt="CraveCart"
-            width="28"
-            height="28"
-            style="display:block;border-radius:8px;outline:none;text-decoration:none;" />
-    <div style="font-size:18px;font-weight:800;letter-spacing:.2px;line-height:1;">
-    CraveCart
-  </div>
-</div>
-      <div style="font-size:12px;opacity:.88;margin-top:4px;">Admin • New Order Received</div>
+        <img src="{{ logo_url }}" alt="CraveCart" width="28" height="28"
+             style="display:block;border-radius:8px;outline:none;text-decoration:none;" />
+        <div style="font-size:18px;font-weight:800;letter-spacing:.2px;line-height:1;">
+          CraveCart
+        </div>
+      </div>
+      <div style="font-size:12px;opacity:.88;margin-top:6px;">Admin • New Order Received</div>
     </div>
 
     <!-- Card -->
@@ -98,8 +95,9 @@
     </div>
 
     <div style="text-align:center;color:#9ca3af;font-size:11px;margin-top:10px;line-height:1.5;">
-      © {{ year }} CraveCart. All rights reserved.
+      © 2025 CraveCart. All rights reserved.
     </div>
+
   </div>
 </body>
 </html>

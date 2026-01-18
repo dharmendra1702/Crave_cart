@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # third-party
     "cloudinary",
     "cloudinary_storage",
+    "anymail", 
 ]
 
 # ------------------------------------------------------------
@@ -181,17 +182,31 @@ else:
 # ------------------------------------------------------------
 # Email
 # ------------------------------------------------------------
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
-ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL", EMAIL_HOST_USER)
-SITE_URL = "https://crave-cart-82wd.onrender.com/"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+# EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+# EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+# DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+# ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL", EMAIL_HOST_USER)
+# SITE_URL = "https://crave-cart-82wd.onrender.com/"
 
-EMAIL_TIMEOUT = 10
+# EMAIL_TIMEOUT = 10
+
+# ------------------------------------------------------------
+# Email (Brevo API via django-anymail)
+# ------------------------------------------------------------
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+
+ANYMAIL = {
+    "BREVO_API_KEY": os.getenv("BREVO_API_KEY", ""),
+}
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "CraveCart <no-reply@example.com>")
+ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL", DEFAULT_FROM_EMAIL)
+
+SITE_URL = os.getenv("SITE_URL", "https://crave-cart-82wd.onrender.com/")
 
 
 # ------------------------------------------------------------

@@ -1291,15 +1291,45 @@ def update_username(request):
 
     return redirect("profile")
 
+# ✅ ADD / KEEP THESE IMPORTS (only once in your file)
+import os
 import logging
 from decimal import Decimal
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template.loader import render_to_string
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
+# ✅ ADD THIS HELPER (once) – forces public URL for email assets (logo)
+def _public_site_root(request=None) -> str:
+    """
+    Always return a public https site root for email assets.
+    Priority:
+      1) settings.SITE_URL (set in .env / Render env)
+      2) request.build_absolute_uri("/") (only if request exists)
+      3) fallback Render URL
+    """
+    site_url = (getattr(settings, "SITE_URL", "") or "").strip()
+
+    if not site_url and request:
+        # request could be local (127.0.0.1) - avoid that in emails
+        try:
+            built = (request.build_absolute_uri("/") or "").strip()
+            # use only if it's not localhost/127
+            if built and ("127.0.0.1" not in built) and ("localhost" not in built):
+                site_url = built
+        except Exception:
+            pass
+
+    if not site_url:
+        site_url = "https://crave-cart-82wd.onrender.com/"
+
+    return site_url.rstrip("/")
+
+
+# ✅ REPLACE YOUR send_order_emails WITH THIS FULL FUNCTION
 def send_order_emails(order, request=None):
     # items
     items_manager = getattr(order, "items", None)
@@ -1315,8 +1345,9 @@ def send_order_emails(order, request=None):
             "line_total": line_total
         })
 
-    site_url = request.build_absolute_uri("/") if request else settings.SITE_URL
-    admin_url = request.build_absolute_uri("/admin/") if request else settings.SITE_URL.rstrip("/") + "/admin/"
+    site_root = _public_site_root(request)
+    site_url = f"{site_root}/"
+    admin_url = f"{site_root}/admin/"
 
     context = {
         "order_id": order.id,
@@ -1334,6 +1365,8 @@ def send_order_emails(order, request=None):
         "admin_url": admin_url,
         "user_name": order.user.username,
         "user_email": order.user.email,
+        # ✅ absolute logo URL for email clients
+        "logo_url": f"{site_root}/static/images/logoo.png",
     }
 
     # USER mail
@@ -1368,14 +1401,16 @@ def send_order_emails(order, request=None):
         msg.send(fail_silently=False)
 
 
-
-
+# ✅ REPLACE YOUR send_order_status_email WITH THIS FULL FUNCTION
 def send_order_status_email(order, new_status, request=None):
     # only send for required statuses (extra safety)
     if new_status not in NOTIFY_USER_STATUSES:
         return
 
     status_label = dict(order.STATUS_CHOICES).get(new_status, new_status)
+
+    site_root = _public_site_root(request)
+    site_url = f"{site_root}/"
 
     context = {
         "order_id": order.id,
@@ -1384,7 +1419,9 @@ def send_order_status_email(order, new_status, request=None):
         "updated_at": timezone.localtime(timezone.now()).strftime("%d %b %Y, %I:%M %p"),
         "user_name": order.user.username,
         "year": timezone.now().year,
-        "site_url": (request.build_absolute_uri("/") if request else settings.SITE_URL),
+        "site_url": site_url,
+        # ✅ absolute logo URL for email clients
+        "logo_url": f"{site_root}/static/images/logoo.png",
     }
 
     subject_map = {
@@ -1407,6 +1444,10 @@ def send_order_status_email(order, new_status, request=None):
         )
         msg.attach_alternative(html_body, "text/html")
         msg.send(fail_silently=False)
+
+
+# ✅ KEEP YOUR contact_submit AS-IS (NO CHANGE NEEDED FOR LOGO)
+# but ensure EMAIL works via Brevo backend and settings.ADMIN_ORDER_EMAIL exists
 
 
 @require_POST
