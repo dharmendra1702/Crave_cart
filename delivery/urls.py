@@ -77,7 +77,7 @@ from . import views
 urlpatterns = [
     # Home
     path('', views.index, name='home'),
-    path("/contact/", views.contact_submit, name="contact_submit"),
+    path("contact/", views.contact_submit, name="contact_submit"),
     path("about/", views.about, name="about"),
 
     # Auth

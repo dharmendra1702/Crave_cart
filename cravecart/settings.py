@@ -191,6 +191,9 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 ADMIN_ORDER_EMAIL = os.getenv("ADMIN_ORDER_EMAIL", EMAIL_HOST_USER)
 SITE_URL = "https://crave-cart-82wd.onrender.com/"
 
+EMAIL_TIMEOUT = 10
+
+
 # ------------------------------------------------------------
 # Razorpay
 # ------------------------------------------------------------

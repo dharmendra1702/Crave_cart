@@ -498,7 +498,7 @@
             <div class="info-row muted">Fill the form and we’ll reach out.</div>
           </div>
 
-          <form id="contactForm" method="post" action="{% url 'contact_submit' %}">
+          <form action="{% url 'contact_submit' %}" method="post">
             {% csrf_token %}
 
             <div class="field">
