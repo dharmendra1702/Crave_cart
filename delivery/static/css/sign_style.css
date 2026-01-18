@@ -527,3 +527,30 @@ body[data-theme="dark"] .logout-modal {
   color: #e5e7eb;
   border: 1px solid var(--border);
 }
+
+.pw-wrap{
+  position: relative;
+}
+
+.pw-wrap input{
+  width: 100%;
+  padding-right: 46px; /* space for eye button */
+}
+
+.pw-toggle{
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px;
+  opacity: 0.85;
+}
+
+.pw-toggle:hover{
+  opacity: 1;
+}

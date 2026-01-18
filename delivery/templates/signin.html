@@ -23,7 +23,6 @@
 <body>
 <div class="page">
 
-    <!-- Header -->
      <!-- Header -->
     <header class="header">
         <div class="brand">
@@ -83,7 +82,12 @@
                 <input type="text" name="username" required>
 
                 <label>Password</label>
-                <input type="password" name="password" required>
+                <div class="pw-wrap">
+                    <input type="password" name="password" id="passwordInput" required>
+                    <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password">
+                        <span id="pwIcon">👁️</span>
+                    </button>
+                </div>
 
                 <button type="submit" class="btn primary full-width">
                     Sign In
@@ -123,6 +127,21 @@ document.addEventListener("click", function () {
     const dropdown = document.getElementById("profileDropdown");
     dropdown.classList.remove("show");
 });
+
+
+function togglePassword(){
+  const input = document.getElementById("passwordInput");
+  const icon = document.getElementById("pwIcon");
+
+  if (input.type === "password") {
+    input.type = "text";
+    icon.textContent = "🙈";
+  } else {
+    input.type = "password";
+    icon.textContent = "👁️";
+  }
+}
+
 </script>
 
 </body>
